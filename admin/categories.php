@@ -1,3 +1,7 @@
+<?php include "../include/session.php"; 
+requireAdmin();
+?>
+
 <!DOCTYPE html>
 
 <html class="light" lang="en">
@@ -85,7 +89,7 @@
             </nav>
             <div class="mt-auto pt-10 px-3 pb-6">
                 <a class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all"
-                    href="#">
+                    href="../actions/logout.php">
                     <span class="material-symbols-outlined">logout</span>
                     <span>Logout</span>
                 </a>

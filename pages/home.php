@@ -1,7 +1,7 @@
 
 <?php include "../include/session.php";
+requireUser();
 include "../include/db.php";
-include "../config.php";
 global $conn;
 $user_id = $_SESSION['user_id'];
 

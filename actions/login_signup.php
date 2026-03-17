@@ -52,17 +52,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         if(password_verify($password,$data['password'])){
             session_start();
             $_SESSION['user_id']=$data['id'];
-            $_SESSION['user_name']=$data['name'];
-            header("Location: ../pages/home.php?msg=login_success");
+            $_SESSION['role']=$data['role'];
+            $_SESSION['msg']='login_success';
+            if($data['role']=="user"){
+                header("Location: ../pages/home.php");
+            }elseif($data['role']=="author"){
+                //header("Location: ../pages/home.php");
+            }elseif($data['role']=="admin"){
+                header("Location: ../admin/dashboard.php");
+            }
+            
             exit;
         }else{
             header("Location: ../pages/login.php?msg=p_not_match");
             exit;
-        }}
-    // }else{
-    //     header("Location: ../pages/login.php?msg=u_not_find");
-    //     exit;
-    // }
+        }
+    }else{
+        header("Location: ../pages/login.php?msg=u_not_find");
+        exit;
+    }
 }
 
 ?>
