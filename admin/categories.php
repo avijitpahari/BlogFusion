@@ -39,16 +39,7 @@
             },
         }
     </script>
-    <style>
-        body {
-            font-family: 'Public Sans', sans-serif;
-        }
-
-        .sidebar-active {
-            background-color: rgba(124, 58, 237, 0.1);
-            border-right: 4px solid #7C3AED;
-        }
-    </style>
+    <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
@@ -67,27 +58,27 @@
             </div>
             <nav class="mt-6 px-3 space-y-1">
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="dashboard.php">
                     <span class="material-symbols-outlined">dashboard</span>
                     <span>Dashboard</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="users.php">
                     <span class="material-symbols-outlined">group</span>
                     <span>Users</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="posts.php">
                     <span class="material-symbols-outlined">article</span>
                     <span>Posts</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-primary font-semibold sidebar-active rounded-lg transition-all"
-                    href="#">
+                    href="categories.php">
                     <span class="material-symbols-outlined">category</span>
                     <span>Categories</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="comments.php">
                     <span class="material-symbols-outlined">comment</span>
                     <span>Comments</span>
                 </a>
@@ -115,11 +106,13 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
+                    <!-- ======button====== -->
+                    <button id="themeToggle"
+                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full flex items-center justify-center"
+                        title="Toggle Theme">
+                        <span id="themeIcon" class="material-symbols-outlined">light_mode</span>
+                    </button>
                     <button
-                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors flex items-center justify-center"
-                        title="Toggle Dark Mode">
-                        <span class="material-symbols-outlined">dark_mode</span>
-                    </button><button
                         class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative">
                         <span class="material-symbols-outlined">notifications</span>
                         <span
@@ -309,6 +302,7 @@
             </div>
         </main>
     </div>
+    <script src="../assets/js/admin.js"></script>
 </body>
 
 </html>

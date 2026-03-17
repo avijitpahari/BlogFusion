@@ -1,0 +1,12 @@
+body {
+    font-family: 'Public Sans', sans-serif;
+}
+
+.sidebar-active {
+    background-color: rgba(124, 58, 237, 0.1);
+    border-right: 4px solid #7C3AED;
+}
+
+* {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}

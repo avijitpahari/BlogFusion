@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Blog Fusion - Admin Panel</title>
+    <title>Blog Fusion - Admin Posts</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap"
         rel="stylesheet" />
@@ -39,16 +39,7 @@
             },
         }
     </script>
-    <style>
-        body {
-            font-family: 'Public Sans', sans-serif;
-        }
-
-        .sidebar-active {
-            background-color: rgba(124, 58, 237, 0.1);
-            border-right: 4px solid #7C3AED;
-        }
-    </style>
+    <link rel="stylesheet" href="../assets/css/admin.css"> 
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
@@ -67,37 +58,32 @@
             </div>
             <nav class="mt-6 px-3 space-y-1">
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="dashboard.php">
                     <span class="material-symbols-outlined">dashboard</span>
                     <span>Dashboard</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="users.php">
                     <span class="material-symbols-outlined">group</span>
                     <span>Users</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-primary font-semibold sidebar-active rounded-lg transition-all"
-                    href="#">
+                    href="posts.php">
                     <span class="material-symbols-outlined">article</span>
                     <span>Posts</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="categories.php">
                     <span class="material-symbols-outlined">category</span>
                     <span>Categories</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="comments.php">
                     <span class="material-symbols-outlined">comment</span>
                     <span>Comments</span>
                 </a>
             </nav>
-            <div class="mt-auto pt-10 px-3 pb-6 flex flex-col gap-1">
-                <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span>Settings</span>
-                </a>
+            <div class="mt-auto pt-10 px-3 pb-6">
                 <a class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all"
                     href="#">
                     <span class="material-symbols-outlined">logout</span>
@@ -106,7 +92,7 @@
             </div>
         </aside>
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
             <!-- Top Navbar -->
             <header
                 class="h-16 flex items-center justify-between px-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shrink-0">
@@ -116,47 +102,48 @@
                             class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
-                            placeholder="Search posts, authors, or tags..." type="text" />
+                            placeholder="Search analytics or posts..." type="text" />
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
+                    <!-- ======button====== -->
+                    <button id="themeToggle"
+                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full flex items-center justify-center"
+                        title="Toggle Theme">
+                        <span id="themeIcon" class="material-symbols-outlined">light_mode</span>
+                    </button>
                     <button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative">
                         <span class="material-symbols-outlined">notifications</span>
                         <span
                             class="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
                     </button>
-                    <button
-                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-                        title="Toggle Dark Mode">
-                        <span class="material-symbols-outlined">dark_mode</span>
-                    </button>
                     <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2"></div>
                     <div class="flex items-center gap-3">
                         <div class="text-right hidden sm:block">
-                            <p class="text-sm font-semibold">Alex Rivera</p>
+                            <p class="text-sm font-semibold">Julian Pierce</p>
                             <p class="text-xs text-slate-500">Super Admin</p>
                         </div>
                         <img alt="Admin Avatar" class="h-10 w-10 rounded-full object-cover border-2 border-primary/20"
                             data-alt="Close up portrait of a professional male administrator"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6rqi6vJBKR9b50uP1YpNTf_TtaaRXnswKwWMYIf2V2BR0TH9VgvHuzVTKdAYI0k741T8dckhewgJ1hRwK_pCMjeN3iyDN8MHQ8CCAOmk2lIgmxLSRjiBqIYN3pLHSmIfPeoV5H3u7WdQO5xdQP3S-VxdJQKIgZsV6-SlpfluU0cgTZb5Xl3PAlcosQJg3UzRkNvjqezZ8wnICnmokzfgUOJGmnJLENvjzjuORU9VXs2LxYfSch_N0D0e3m6S6om4-UJ0K5qxF-Ow" />
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg4BP--vCtSY6GpNicW6xVGSjGqV56vSduGJ3z_EUjilOkzVUjUf9INMznnr_7EnlKmXJ2sC1TAIu_lu30A-4Ug1604QBoFNpfBy26CHbVA6u_lrCl_jgqqkzb5O8tM5NbEexvJZt01svWEnNTBlnaFW_mIJmGfQq3tg5r_fg3QBNLV8h7Ze2VYWAjuNECooav2pc6Xi8o2P-j-9oslE6TDHEJV4et_6QkSdo1oWL_b9fdtdQmqw773F2RxHfBhBYWxfga59XIhr4" />
                     </div>
                 </div>
             </header>
             <!-- Scrollable Content -->
-            <main class="flex-1 overflow-y-auto p-8">
+            <div class="flex-1 overflow-y-auto p-8">
                 <!-- Page Header -->
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div class="flex items-center justify-between mb-8">
                     <div>
                         <h2 class="text-3xl font-black tracking-tight">Posts</h2>
-                        <p class="text-slate-500 mt-1">Manage and organize your blog content</p>
+                        <p class="text-slate-500">Manage and organize your blog content</p>
                     </div>
                     <button
-                        class="flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20">
+                        class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
                         <span class="material-symbols-outlined text-[20px]">add</span>
-                        <span>Add Post</span>
+                        Add Post
                     </button>
                 </div>
-                <!-- Filters Card -->
+                <!-- Filters -->
                 <div
                     class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 mb-8">
                     <div class="flex flex-wrap items-center gap-6">
@@ -193,20 +180,20 @@
                         </div>
                         <div class="flex gap-2 self-end">
                             <button
-                                class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl font-bold transition-colors text-sm">
+                                class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm">
                                 Reset Filters
                             </button>
                         </div>
                     </div>
                 </div>
-                <!-- Posts Table Container -->
+                <!-- Posts Table -->
                 <div
                     class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr
-                                    class="text-slate-500 text-xs uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                                    class="text-slate-500 text-xs uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/50">
                                     <th class="px-6 py-4 font-semibold w-24">Image</th>
                                     <th class="px-6 py-4 font-semibold">Title</th>
                                     <th class="px-6 py-4 font-semibold">Category</th>
@@ -242,9 +229,9 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end gap-1">
+                                        <div class="flex justify-end gap-2">
                                             <button
-                                                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-600/10 rounded-lg transition-colors"
+                                                class="p-2 text-slate-400 hover:text-indigo-accent hover:bg-indigo-600/10 rounded-lg transition-colors"
                                                 title="View">
                                                 <span class="material-symbols-outlined text-[20px]">visibility</span>
                                             </button>
@@ -288,9 +275,9 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end gap-1">
+                                        <div class="flex justify-end gap-2">
                                             <button
-                                                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-600/10 rounded-lg transition-colors"
+                                                class="p-2 text-slate-400 hover:text-indigo-accent hover:bg-indigo-600/10 rounded-lg transition-colors"
                                                 title="View">
                                                 <span class="material-symbols-outlined text-[20px]">visibility</span>
                                             </button>
@@ -334,9 +321,9 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end gap-1">
+                                        <div class="flex justify-end gap-2">
                                             <button
-                                                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-600/10 rounded-lg transition-colors"
+                                                class="p-2 text-slate-400 hover:text-indigo-accent hover:bg-indigo-600/10 rounded-lg transition-colors"
                                                 title="View">
                                                 <span class="material-symbols-outlined text-[20px]">visibility</span>
                                             </button>
@@ -380,9 +367,9 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end gap-1">
+                                        <div class="flex justify-end gap-2">
                                             <button
-                                                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-600/10 rounded-lg transition-colors"
+                                                class="p-2 text-slate-400 hover:text-indigo-accent hover:bg-indigo-600/10 rounded-lg transition-colors"
                                                 title="View">
                                                 <span class="material-symbols-outlined text-[20px]">visibility</span>
                                             </button>
@@ -403,32 +390,32 @@
                         </table>
                     </div>
                     <!-- Pagination -->
-                    <div
-                        class="px-6 py-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
+                    <div class="px-6 py-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
                         <p class="text-xs text-slate-500">Showing 1 to 4 of 48 entries</p>
-                        <div class="flex items-center gap-1">
+                        <div class="flex gap-1">
                             <button
-                                class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 transition-colors">
                                 <span class="material-symbols-outlined text-sm">chevron_left</span>
                             </button>
-                            <button class="h-8 w-8 rounded-lg bg-primary text-white text-xs font-bold">1</button>
+                            <button class="px-3 py-1 rounded-lg bg-primary text-white text-xs font-bold">1</button>
                             <button
-                                class="h-8 w-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium">2</button>
+                                class="px-3 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-xs font-medium">2</button>
                             <button
-                                class="h-8 w-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium">3</button>
-                            <span class="px-2 text-slate-400">...</span>
+                                class="px-3 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-xs font-medium">3</button>
+                            <span class="px-2 py-1 text-slate-400 text-xs">...</span>
                             <button
-                                class="h-8 w-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-medium">12</button>
+                                class="px-3 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-xs font-medium">12</button>
                             <button
-                                class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 transition-colors">
                                 <span class="material-symbols-outlined text-sm">chevron_right</span>
                             </button>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
+    <script src="../assets/js/admin.js"></script>
 </body>
 
 </html>
