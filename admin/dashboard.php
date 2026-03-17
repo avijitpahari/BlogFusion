@@ -115,7 +115,12 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
-                    <button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative">
+                    <button
+                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full flex items-center justify-center"
+                        title="Toggle Theme">
+                        <span class="material-symbols-outlined">light_mode</span>
+                    </button><button
+                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative">
                         <span class="material-symbols-outlined">notifications</span>
                         <span
                             class="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
