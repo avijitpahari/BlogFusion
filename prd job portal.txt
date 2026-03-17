@@ -1,0 +1,53 @@
+job-portal/
+│
+├── index.php
+├── config/
+│     └── database.php
+│
+├── includes/
+│     ├── header.php
+│     ├── footer.php
+│     ├── navbar.php
+│     └── session.php
+│
+├── auth/
+│     ├── login.php
+│     ├── register.php
+│     └── logout.php
+│
+├── candidate/
+│     ├── dashboard.php
+│     ├── profile.php
+│     ├── apply-job.php
+│     └── my-applications.php
+│
+├── employer/
+│     ├── dashboard.php
+│     ├── post-job.php
+│     ├── manage-jobs.php
+│     └── view-applicants.php
+│
+├── admin/
+│     ├── dashboard.php
+│     ├── manage-users.php
+│     ├── manage-employers.php
+│     └── manage-jobs.php
+│
+├── jobs/
+│     ├── job-list.php
+│     └── job-details.php
+│
+├── uploads/
+│     └── resumes/
+│
+├── assets/
+│     ├── css/
+│     │     └── style.css
+│     │
+│     ├── js/
+│     │     └── script.js
+│     │
+│     └── images/
+│
+└── database/
+      └── jobportal.sql

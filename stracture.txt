@@ -1,0 +1,60 @@
+blog-website/
+│
+├── index.php
+├── config.php
+│
+├── includes/
+│   ├── db.php
+│   ├── header.php
+│   ├── footer.php
+│   ├── navbar.php
+│   └── session.php
+│
+├── pages/
+│   ├── home.php
+│   ├── blog.php
+│   ├── single-post.php
+│   ├── category.php
+│   ├── search.php
+│   ├── login.php
+│   ├── register.php
+│   └── profile.php
+│
+├── admin/
+│   ├── dashboard.php
+│   ├── manage-users.php
+│   ├── manage-posts.php
+│   ├── manage-categories.php
+│   └── manage-comments.php
+│
+├── author/
+│   ├── dashboard.php
+│   ├── add-post.php
+│   ├── edit-post.php
+│   ├── my-posts.php
+│   └── comments.php
+│
+├── actions/
+│   ├── login_action.php
+│   ├── register_action.php
+│   ├── logout.php
+│   ├── add_post_action.php
+│   ├── edit_post_action.php
+│   ├── delete_post.php
+│   └── comment_action.php
+│
+├── uploads/
+│   ├── post-images/
+│   └── profile-images/
+│
+├── assets/
+│   ├── css/
+│   │   └── style.css
+│   │
+│   ├── js/
+│   │   └── script.js
+│   │
+│   └── images/
+│
+└── database/
+    └── blog.sql
