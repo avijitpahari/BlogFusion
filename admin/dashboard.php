@@ -1,15 +1,14 @@
 <?php include "../include/session.php"; 
 requireAdmin();
 include "../include/db.php";
-global $conn;
-$user_id = $_SESSION['user_id'];
+include "../include/data_fetch.php";
+$data_fetch=data_featch($conn,$_SESSION['user_id']);
+$data=$data_fetch['data'];
 
-$query = "SELECT * FROM users WHERE id = '$user_id'";
-$result = mysqli_query($conn, $query);
-$data = mysqli_fetch_assoc($result);
-$image=$data['profile_image'];
+
 
 ?>
+
 <!DOCTYPE html>
 
 <html class="light" lang="en">
@@ -136,12 +135,17 @@ $image=$data['profile_image'];
                     <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2"></div>
                     <div class="flex items-center gap-3">
                         <div class="text-right hidden sm:block">
-                            <p class="text-sm font-semibold"><?php $data['name'] ?></p>
+                            <p class="text-sm font-semibold"><?= $data['name'] ?></p>
                             <p class="text-xs text-slate-500">Super Admin</p>
                         </div>
                         <img alt="Admin Avatar" class="h-10 w-10 rounded-full object-cover border-2 border-primary/20"
                             data-alt="Close up portrait of a professional male administrator"
-                            src="<?php '../'.$image ?>" />
+                            src="<?php if($data_fetch['image']){
+                                    echo  $data_fetch['image'];
+                                }else{
+                                    echo '../upload/profile-images/default.png';
+                                }
+                                ?>" />
                     </div>
                 </div>
             </header>

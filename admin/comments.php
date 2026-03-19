@@ -1,5 +1,9 @@
 <?php include "../include/session.php"; 
 requireAdmin();
+include "../include/db.php";
+include "../include/data_fetch.php";
+$data_fetch=data_featch($conn,$_SESSION['user_id']);
+$data=$data_fetch['data'];
 ?>
 <!DOCTYPE html>
 
@@ -123,12 +127,17 @@ requireAdmin();
                     <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2"></div>
                     <div class="flex items-center gap-3">
                         <div class="text-right hidden sm:block">
-                            <p class="text-sm font-semibold">Julian Pierce</p>
+                            <p class="text-sm font-semibold"><?= $data['name'] ?></p>
                             <p class="text-xs text-slate-500">Super Admin</p>
                         </div>
                         <img alt="Admin Avatar" class="h-10 w-10 rounded-full object-cover border-2 border-primary/20"
                             data-alt="Close up portrait of a professional male administrator"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg4BP--vCtSY6GpNicW6xVGSjGqV56vSduGJ3z_EUjilOkzVUjUf9INMznnr_7EnlKmXJ2sC1TAIu_lu30A-4Ug1604QBoFNpfBy26CHbVA6u_lrCl_jgqqkzb5O8tM5NbEexvJZt01svWEnNTBlnaFW_mIJmGfQq3tg5r_fg3QBNLV8h7Ze2VYWAjuNECooav2pc6Xi8o2P-j-9oslE6TDHEJV4et_6QkSdo1oWL_b9fdtdQmqw773F2RxHfBhBYWxfga59XIhr4" />
+                            src="<?php if($data_fetch['image']){
+                                    echo  $data_fetch['image'];
+                                }else{
+                                    echo '../upload/profile-images/default.png';
+                                }
+                                ?>" />
                     </div>
                 </div>
             </header>
