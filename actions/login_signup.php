@@ -19,6 +19,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['signup'])) {
             $path='upload/profile-images/'.time().'_'.$imgname;
         }
     };
+    if(empty($path)){
+        $path='upload/profile-images/default.png';
+    };
     $query = "SELECT * FROM users WHERE email='$email'";
     $result = mysqli_query($conn, $query);
     if (mysqli_num_rows($result) > 0) {

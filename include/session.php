@@ -12,7 +12,7 @@ function requireUser(){
 // Check admin
 function requireAdmin(){
     requireUser(); // first check login
-
+    
     if ($_SESSION['role'] !== "admin") {
         header("Location: ../pages/login.php");
         exit;

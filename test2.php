@@ -1,66 +1,176 @@
-<!DOCTYPE html>
+<?php
+// ==== Use for Pagination data ======
+// function paginate($table, $limit = 5)
+// {
+//     global $conn;
+//     // current page
+//     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+//     if ($page < 1) $page = 1;
 
-<html class="light" lang="en">
+//     $offset = ($page - 1) * $limit;
 
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Blog Fusion - Navigation</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <script
-        id="tailwind-config"> tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#7C3AED", "background-light": "#f8f6f6", "background-dark": "#221610", }, fontFamily: { "display": ["Public Sans", "sans-serif"] }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, }, }, } </script>
-    <style>
-        body {
-            font-family: 'Public Sans', sans-serif;
+//     // fetch data
+//     $query = "SELECT * FROM $table LIMIT $limit OFFSET $offset";
+//     $result = mysqli_query($conn, $query);
+//     $data = mysqli_num_rows($result) ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
+
+//     // total count
+//     $total_query = "SELECT COUNT(*) as total FROM $table";
+//     $total_result = mysqli_query($conn, $total_query);
+//     $total_row = mysqli_fetch_assoc($total_result);
+
+//     $total_records = $total_row['total'];
+//     $total_pages = ceil($total_records / $limit);
+
+//     return [
+//         // 'data' => $result,
+//         'data' => $data,
+//         'total_pages' => $total_pages,
+//         'current_page' => $page
+//     ];
+// }
+
+function paginate($table, $limit = 4)
+{
+    global $conn;
+
+    // current page
+    $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+    if ($page < 1)
+        $page = 1;
+
+    $offset = ($page - 1) * $limit;
+
+    // fetch data
+    $query = "SELECT * FROM $table LIMIT $limit OFFSET $offset";
+    $result = mysqli_query($conn, $query);
+    $data = mysqli_num_rows($result) ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
+
+    // total count
+    $total_query = "SELECT COUNT(*) as total FROM $table";
+    $total_result = mysqli_query($conn, $total_query);
+    $total_row = mysqli_fetch_assoc($total_result);
+
+    $total_records = $total_row['total'];
+    $total_pages = ceil($total_records / $limit);
+
+    return [
+        'data' => $data,
+        'total_pages' => $total_pages,
+        'current_page' => $page,
+        'limit' => $limit,
+        'total_records' => $total_records,
+        'offset' => $offset
+    ];
+}
+
+// ==== Use For Pagination Links ======
+// function pagination_links($total_pages, $current_page)
+// {
+
+//     echo '<ul class="pagination">';
+
+//     // Previous
+//     if ($current_page > 1) {
+//         echo '<li class="page-item">
+//         <a class="page-link" href="?page=' . ($current_page - 1) . '">Previous</a>
+//         </li>';
+//     }
+
+//     // numbers
+//     for ($i = 1; $i <= $total_pages; $i++) {
+//         $active = ($i == $current_page) ? 'active' : '';
+
+//         echo '<li class="page-item ' . $active . '">
+//         <a class="page-link" href="?page=' . $i . '">' . $i . '</a>
+//         </li>';
+//     }
+
+//     // Next
+//     if ($current_page < $total_pages) {
+//         echo '<li class="page-item">
+//         <a class="page-link" href="?page=' . ($current_page + 1) . '">Next</a>
+//         </li>';
+//     }
+
+//     echo '</ul>';
+// }
+
+function pagination_links( $limit, $total_records,$offset,$data_count)
+{
+
+    $currentPage = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+    $totalPages = 4; // example
+
+    // 👉 start & end calculate
+    $start = $currentPage - 1;
+    $end = $currentPage + 1;
+
+    // 👉 fix start
+    if ($start < 1) {
+        $start = 1;
+        $end = min(3, $totalPages);
+    }
+
+    // 👉 fix end
+    if ($end > $totalPages) {
+        $end = $totalPages;
+        $start = max(1, $totalPages - 2);
+    }
+    echo '<div class="bg-slate-50/50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">';
+    echo '<p class="text-sm text-slate-500">Showing <span
+                                class="font-bold text-slate-900 dark:text-slate-100">'; echo ($offset + 1) ;echo'</span>
+                            to <span
+                                class="font-bold text-slate-900 dark:text-slate-100">';echo min($offset + $limit, $total_records),'</span>
+                            of <span
+                                class="font-bold text-slate-900 dark:text-slate-100">'; echo $total_records,'</span>
+                            users</p>';
+    echo '<div class="px-6 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 flex items-center justify-between">';
+    echo '<div class="flex items-center gap-2">';
+
+    // 🔙 PREVIOUS BUTTON
+    if ($currentPage == 1) {
+        echo '<button class="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 rounded-lg opacity-50" disabled>
+            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+          </button>';
+    } else {
+        echo '<a href="?page=' . ($currentPage - 1) . '">
+            <button class="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
+          </a>';
+    }
+
+    // 🔢 PAGE NUMBERS
+    for ($i = $start; $i <= $end; $i++) {
+
+        // 👉 Active Page
+        if ($i == $currentPage) {
+            echo '<button class="h-9 w-9 flex items-center justify-center bg-primary text-white rounded-lg font-bold text-sm shadow-sm">'
+                . $i .
+                '</button>';
+        } else {
+            echo '<a href="?page=' . $i . '">
+                <button class="h-9 w-9 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition-colors">'
+                . $i .
+                '</button>
+              </a>';
         }
-    </style>
-</head>
+    }
 
-<body class="bg-background-light dark:bg-background-dark min-h-[200vh]"> <!-- Sticky Top Navigation Bar -->
-    <nav
-        class="sticky top-0 z-50 w-full bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16"> <!-- Left: Logo -->
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white"> <span
-                            class="material-symbols-outlined text-2xl">auto_stories</span> </div> <span
-                        class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 hidden md:block">
-                        Blog<span class="text-primary">Fusion</span> </span>
-                </div> <!-- Center: Search Bar -->
-                <div class="flex-1 max-w-md px-8 hidden sm:block">
-                    <div class="relative group">
-                        <div
-                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                            <span class="material-symbols-outlined text-xl">search</span> </div> <input
-                            class="block w-full pl-10 pr-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                            placeholder="Search articles, topics..." type="text" />
-                    </div>
-                </div> <!-- Right: Nav Links & Actions -->
-                <div class="flex items-center gap-2 md:gap-6"> <!-- Navigation Links -->
-                    <div class="hidden lg:flex items-center gap-6"> <a
-                            class="text-sm font-medium text-primary border-b-2 border-primary pb-0.5" href="#">Home</a>
-                        <a class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
-                            href="#">Explore</a> <a
-                            class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
-                            href="#">Bookmarks</a> </div>
-                    <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden lg:block mx-2"></div>
-                    <!-- Create Button --> <!-- Mobile Search Icon (only visible on small screens) --> <button
-                        class="sm:hidden p-2 text-slate-600 dark:text-slate-400"> <span
-                            class="material-symbols-outlined">search</span> </button> <!-- User Profile --> <button
-                        class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm shadow-primary/20">Login</button>
-                </div>
-            </div>
-        </div>
-    </nav>
-    
-</body>
+    // 🔜 NEXT BUTTON
+    if ($currentPage == $totalPages) {
+        echo '<button class="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 rounded-lg opacity-50" disabled>
+            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+          </button>';
+    } else {
+        echo '<a href="?page=' . ($currentPage + 1) . '">
+            <button class="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </a>';
+    }
 
-</html>
+    echo '</div>';
+    echo '</div>';
+}

@@ -1,3 +1,15 @@
+<?php include "../include/session.php"; 
+requireAdmin();
+include "../include/db.php";
+include "../include/data_fetch.php";
+$data_fetch=data_featch($conn,$_SESSION['user_id']);
+$data=$data_fetch['data'];
+include "../include/admin_nav_sidebar.php";
+
+
+
+?>
+
 <!DOCTYPE html>
 
 <html class="light" lang="en">
@@ -5,7 +17,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Users Management - Blog Fusion</title>
+    <title>Blog Fusion - Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap"
         rel="stylesheet" />
@@ -20,7 +32,7 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#7C3AED", // Violet-600
+                        "primary": "#7C3AED", // Violet-600 (Primary from request)
                         "primary-hover": "#6D28D9",
                         "background-light": "#f8f7ff",
                         "background-dark": "#0f172a",
@@ -39,31 +51,14 @@
             },
         }
     </script>
-    <style>
-        body {
-            font-family: 'Public Sans', sans-serif;
-        }
-
-        .sidebar-active {
-            background-color: rgba(124, 58, 237, 0.1);
-            border-right: 4px solid #7C3AED;
-        }
-
-        [v-cloak] {
-            display: none;
-        }
-
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-        }
-    </style>
+    
+   <link rel="stylesheet" href="../assets/css/admin.css"> 
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
-        <aside
+        <!-- SideNavBar -->
+        <!-- <aside
             class="w-64 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-y-auto">
             <div class="p-6 flex items-center gap-3">
                 <div class="h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-white">
@@ -75,431 +70,285 @@
                 </div>
             </div>
             <nav class="mt-6 px-3 space-y-1">
-                <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                <a class="flex items-center gap-3 px-4 py-3 text-primary font-semibold sidebar-active rounded-lg transition-all"
+                    href="dashboard.php">
                     <span class="material-symbols-outlined">dashboard</span>
                     <span>Dashboard</span>
                 </a>
-                <a class="flex items-center gap-3 px-4 py-3 text-primary font-semibold sidebar-active rounded-lg transition-all"
-                    href="#">
+                <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
+                    href="users.php">
                     <span class="material-symbols-outlined">group</span>
                     <span>Users</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="posts.php">
                     <span class="material-symbols-outlined">article</span>
                     <span>Posts</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="categories.php">
                     <span class="material-symbols-outlined">category</span>
                     <span>Categories</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all"
-                    href="#">
+                    href="comments.php">
                     <span class="material-symbols-outlined">comment</span>
                     <span>Comments</span>
                 </a>
             </nav>
             <div class="mt-auto pt-10 px-3 pb-6">
                 <a class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all"
-                    href="#">
+                    href="../actions/logout.php">
                     <span class="material-symbols-outlined">logout</span>
                     <span>Logout</span>
                 </a>
             </div>
-        </aside>
-        <!-- Main Content -->
+        </aside> -->
+        <?=slidebar('dashboard');?>
+        <!-- Main Content Area -->
         <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <!-- Navbar -->
-            <header
-                class="h-16 flex items-center justify-between px-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                <div class="max-w-md w-full">
-                    <div class="relative">
-                        <span
-                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                        <input
-                            class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
-                            placeholder="Search analytics or posts..." type="text" />
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative">
-                        <span class="material-symbols-outlined">notifications</span>
-                        <span
-                            class="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-                    </button>
-                    <button
-                        class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors flex items-center justify-center"
-                        onclick="document.documentElement.classList.toggle('dark')" title="Toggle theme">
-                        <span class="material-symbols-outlined text-[22px]">light_mode</span>
-                    </button>
-                    <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2"></div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-right hidden sm:block">
-                            <p class="text-sm font-semibold">Julian Pierce</p>
-                            <p class="text-xs text-slate-500">Super Admin</p>
-                        </div>
-                        <img alt="Admin Avatar" class="h-10 w-10 rounded-full object-cover border-2 border-primary/20"
-                            data-alt="Close up portrait of a professional male administrator"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg4BP--vCtSY6GpNicW6xVGSjGqV56vSduGJ3z_EUjilOkzVUjUf9INMznnr_7EnlKmXJ2sC1TAIu_lu30A-4Ug1604QBoFNpfBy26CHbVA6u_lrCl_jgqqkzb5O8tM5NbEexvJZt01svWEnNTBlnaFW_mIJmGfQq3tg5r_fg3QBNLV8h7Ze2VYWAjuNECooav2pc6Xi8o2P-j-9oslE6TDHEJV4et_6QkSdo1oWL_b9fdtdQmqw773F2RxHfBhBYWxfga59XIhr4" />
-                    </div>
-                </div>
-            </header>
+            <!-- Top Navbar -->
+            <?=ad_navbar($data,$data_fetch);?>
+            <!-- Dashboard Content -->
             <div class="flex-1 overflow-y-auto p-8">
-                <!-- Page Header -->
                 <div class="flex items-center justify-between mb-8">
                     <div>
-                        <h2 class="text-3xl font-black tracking-tight">Users</h2>
-                        <p class="text-slate-500">Manage platform contributors and account access levels.</p>
+                        <h2 class="text-3xl font-black tracking-tight">Dashboard Overview</h2>
+                        <p class="text-slate-500">Welcome back, here's what's happening today.</p>
                     </div>
                     <button
                         class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
                         <span class="material-symbols-outlined text-[20px]">add</span>
-                        <span>Add User</span>
+                        New Post
                     </button>
                 </div>
-                <!-- Filters -->
-                <div
-                    class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mb-8 flex flex-wrap gap-4 items-center">
-                    <div class="flex-1 min-w-[300px] relative">
-                        <span
-                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">filter_list</span>
-                        <input
-                            class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary"
-                            placeholder="Filter users by name, email or role..." type="text" />
-                    </div>
-                    <div class="flex gap-2">
-                        <button
-                            class="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">calendar_today</span>
-                            <span>Date Joined</span>
-                        </button>
-                        <button
-                            class="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">download</span>
-                            <span>Export</span>
-                        </button>
-                    </div>
-                </div>
-                <!-- Table Container -->
-                <div
-                    class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-8">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr
-                                    class="text-slate-500 text-xs uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                                    <th class="px-6 py-4 font-semibold">User Name</th>
-                                    <th class="px-6 py-4 font-semibold">Email Address</th>
-                                    <th class="px-6 py-4 font-semibold">Role</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="size-10 rounded-full bg-primary/10 bg-cover bg-center border border-primary/20"
-                                                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCaIHZOqcEtt-9WpKFSq4jKLedBn8MO53lEukh3El229zvtHbZVgA70X0Ig4bJX08Y1NHKoDx2XvHp83Dgh-BD6DauBnqMSrDMwzHURHerPqMe5dELkjsp8NOIKblHWFA8Nte6ETEOFcKj0X2A0rBUqKoEBtffRBmwQgMfTYY7V7jC8-_FNcE4-MTFEPxm56cDlZqPtBfgr9twA8UYtmEeWDCR5ZQ9jP6BdVsiOe0WdYSBokpS57Pn5GrBXwykF8QHg7IOSd3MN0cM')">
-                                            </div>
-                                            <div>
-                                                <p class="font-bold text-slate-900 dark:text-slate-100 text-sm">Sarah
-                                                    Chen</p>
-                                                <p class="text-xs text-slate-500">Joined Oct 12, 2023</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                                        sarah.chen@blogfusion.io</td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-purple-100 text-purple-700 uppercase dark:bg-purple-900/30 dark:text-purple-400">Admin</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <button class="p-2 text-slate-400 hover:text-primary transition-colors"
-                                                onclick="toggleModal('edit-user-modal', true)">
-                                                <span class="material-symbols-outlined text-[20px]">edit_note</span>
-                                            </button>
-                                            <button class="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                            <button
-                                                class="flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                                <span>Role</span>
-                                                <span class="material-symbols-outlined text-[16px]">expand_more</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="size-10 rounded-full bg-primary/10 bg-cover bg-center border border-primary/20"
-                                                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDXrWNPIwqoYr877uOIiMtiPlxNGLAlf06s7ROYWNdKU3tU_KRITuDNJ3X1W7Yp5w-7ZC9xwBKafmIGVCwKSJ61UVSZNY9WkiRd4HVblTfekjD_5PwerjHf7ZcEMrVpALVtVrWzy7SJV_wKf9MYqmqKIfK8KOvwOAJOXLtaeZkAuhcmQyiVJUQfzaVNbGgvhEKrM-f29nlBLjBT9XvjocMz8VxJxxXpWRYGLgjx7PfbJ3cjsBWfoVvfL25xH21zJgLPuL9IPk5IdM4')">
-                                            </div>
-                                            <div>
-                                                <p class="font-bold text-slate-900 dark:text-slate-100 text-sm">Marcus
-                                                    Thorne</p>
-                                                <p class="text-xs text-slate-500">Joined Sep 28, 2023</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">m.thorne@writer.net
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 uppercase dark:bg-blue-900/30 dark:text-blue-400">Author</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <button class="p-2 text-slate-400 hover:text-primary transition-colors"
-                                                onclick="toggleModal('edit-user-modal', true)">
-                                                <span class="material-symbols-outlined text-[20px]">edit_note</span>
-                                            </button>
-                                            <button class="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                            <button
-                                                class="flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                                <span>Role</span>
-                                                <span class="material-symbols-outlined text-[16px]">expand_more</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="size-10 rounded-full bg-primary/10 bg-cover bg-center border border-primary/20"
-                                                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC2WvxKnBITAo9_bhm-9v09AEKU26Jw-rwNMbFXNvR5s35O3LxtciMsnDZfR8Yz-pSOMkDwCYCdUOrIE7YQvVPmAr-mH-gDc6c4cSq4OrkrwnKVkmv7RbP4OctFQvt8FD_bpxOZpY2VDaIiXK6ZStwnmqy9L7lmAH940LjT1DtyiKPId_GAn7IIzs6zpdnJVP-IsGsWiqqx4Hu79z_-DkGO5Gwh684EPC6CkdhX597JHlHiPkGEvHv_KgsfpAZY1vWR3dUZxWXhcPs')">
-                                            </div>
-                                            <div>
-                                                <p class="font-bold text-slate-900 dark:text-slate-100 text-sm">Elena
-                                                    Rodriguez</p>
-                                                <p class="text-xs text-slate-500">Joined Jan 05, 2024</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">elena.rod@gmail.com
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 uppercase dark:bg-slate-800 dark:text-slate-400">User</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <button class="p-2 text-slate-400 hover:text-primary transition-colors"
-                                                onclick="toggleModal('edit-user-modal', true)">
-                                                <span class="material-symbols-outlined text-[20px]">edit_note</span>
-                                            </button>
-                                            <button class="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                            <button
-                                                class="flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                                <span>Role</span>
-                                                <span class="material-symbols-outlined text-[16px]">expand_more</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="size-10 rounded-full bg-primary/10 bg-cover bg-center border border-primary/20"
-                                                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCFLkF1z1JpHlAqbglAETK0FQKfguUdJp6dto7XTSe355pIIUhFP28ThHBD6mSMdNSf0bsUf1CS3S8VyWHK69lRsNmOAsBRgmahPC1NKqlnA2-tz2foAy8BQtQHsKmTju6No41p5J_O9EHR-TIQlUORwWHIZGJhlW2InOyo-hzmD0_WL_2QZgRYyhQGlE8x-fTjIetjCPNKekTBcfa-2c9zCllCDEj0DCibYSFonp-d2pJutOj9Gx_SPV5PHz6qrg1c0y5JnioeUJI')">
-                                            </div>
-                                            <div>
-                                                <p class="font-bold text-slate-900 dark:text-slate-100 text-sm">David
-                                                    Park</p>
-                                                <p class="text-xs text-slate-500">Joined Nov 15, 2023</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                                        park.david@agency.com</td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 uppercase dark:bg-blue-900/30 dark:text-blue-400">Author</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <button class="p-2 text-slate-400 hover:text-primary transition-colors"
-                                                onclick="toggleModal('edit-user-modal', true)">
-                                                <span class="material-symbols-outlined text-[20px]">edit_note</span>
-                                            </button>
-                                            <button class="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                            <button
-                                                class="flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                                <span>Role</span>
-                                                <span class="material-symbols-outlined text-[16px]">expand_more</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div
-                        class="bg-slate-50/50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
-                        <p class="text-sm text-slate-500">Showing <span
-                                class="font-bold text-slate-900 dark:text-slate-100">1</span> to <span
-                                class="font-bold text-slate-900 dark:text-slate-100">4</span> of <span
-                                class="font-bold text-slate-900 dark:text-slate-100">42</span> users</p>
-                        <div class="flex gap-2">
-                            <button
-                                class="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold shadow-sm opacity-50 cursor-not-allowed">Previous</button>
-                            <button
-                                class="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold shadow-sm">1</button>
-                            <button
-                                class="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold shadow-sm">2</button>
-                            <button
-                                class="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold shadow-sm">3</button>
-                            <button
-                                class="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold shadow-sm">Next</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- Footer Summary Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div
                         class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center justify-between mb-4">
                             <div
-                                class="h-10 w-10 bg-green-500/10 text-green-600 rounded-xl flex items-center justify-center">
-                                <span class="material-symbols-outlined text-[20px]">person_add</span>
-                            </div>
-                            <span class="text-[10px] font-bold text-green-500 bg-green-50 px-2 py-1 rounded-full">+12%
-                                month</span>
-                        </div>
-                        <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">New Signups</p>
-                        <p class="text-2xl font-bold mt-1">128</p>
-                    </div>
-                    <div
-                        class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div
-                                class="h-10 w-10 bg-blue-500/10 text-blue-600 rounded-xl flex items-center justify-center">
-                                <span class="material-symbols-outlined text-[20px]">verified_user</span>
+                                class="h-12 w-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined">group</span>
                             </div>
                             <span
-                                class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-full uppercase tracking-tighter">Steady</span>
+                                class="text-green-500 text-xs font-bold bg-green-50 px-2 py-1 rounded-full">+12%</span>
                         </div>
-                        <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">Active Authors</p>
-                        <p class="text-2xl font-bold mt-1">14</p>
+                        <p class="text-slate-500 text-sm font-medium">Total Users</p>
+                        <h3 class="text-2xl font-bold mt-1">12,840</h3>
                     </div>
                     <div
                         class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center justify-between mb-4">
                             <div
-                                class="h-10 w-10 bg-amber-500/10 text-amber-600 rounded-xl flex items-center justify-center">
-                                <span class="material-symbols-outlined text-[20px]">report</span>
+                                class="h-12 w-12 bg-indigo- accent bg-indigo-600/10 text-indigo-600 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined">article</span>
                             </div>
-                            <span
-                                class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full uppercase tracking-tighter">2
-                                pending</span>
+                            <span class="text-green-500 text-xs font-bold bg-green-50 px-2 py-1 rounded-full">+4%</span>
                         </div>
-                        <p class="text-slate-500 text-xs font-medium uppercase tracking-wider">Flagged Accounts</p>
-                        <p class="text-2xl font-bold mt-1">3</p>
+                        <p class="text-slate-500 text-sm font-medium">Total Posts</p>
+                        <h3 class="text-2xl font-bold mt-1">1,452</h3>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div
+                                class="h-12 w-12 bg-amber-500/10 text-amber-500 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined">category</span>
+                            </div>
+                            <span class="text-slate-400 text-xs font-bold bg-slate-50 px-2 py-1 rounded-full">0%</span>
+                        </div>
+                        <p class="text-slate-500 text-sm font-medium">Categories</p>
+                        <h3 class="text-2xl font-bold mt-1">24</h3>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div
+                                class="h-12 w-12 bg-pink-500/10 text-pink-500 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined">forum</span>
+                            </div>
+                            <span class="text-red-500 text-xs font-bold bg-red-50 px-2 py-1 rounded-full">-2%</span>
+                        </div>
+                        <p class="text-slate-500 text-sm font-medium">Comments</p>
+                        <h3 class="text-2xl font-bold mt-1">45,902</h3>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <!-- Recent Posts Table -->
+                    <div
+                        class="xl:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                        <div
+                            class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                            <h3 class="font-bold text-lg">Recent Posts</h3>
+                            <button class="text-primary text-sm font-semibold hover:underline">View All</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr
+                                        class="text-slate-500 text-xs uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/50">
+                                        <th class="px-6 py-4 font-semibold">Post Title</th>
+                                        <th class="px-6 py-4 font-semibold">Author</th>
+                                        <th class="px-6 py-4 font-semibold">Date</th>
+                                        <th class="px-6 py-4 font-semibold text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <p class="font-medium truncate max-w-[240px]">The Future of AI in Modern
+                                                Design</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <div
+                                                    class="h-6 w-6 rounded-full bg-primary/20 text-[10px] flex items-center justify-center font-bold text-primary">
+                                                    SC</div>
+                                                <span class="text-sm">Sarah Chen</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-500">Oct 24, 2023</td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span
+                                                class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-green-100 text-green-700 uppercase">Published</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <p class="font-medium truncate max-w-[240px]">10 Productivity Hacks for
+                                                Remote Teams</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <div
+                                                    class="h-6 w-6 rounded-full bg-primary/20 text-[10px] flex items-center justify-center font-bold text-primary">
+                                                    MK</div>
+                                                <span class="text-sm">Marcus King</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-500">Oct 23, 2023</td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span
+                                                class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 uppercase">Draft</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <p class="font-medium truncate max-w-[240px]">Mastering Tailwind CSS v4
+                                                Features</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <div
+                                                    class="h-6 w-6 rounded-full bg-primary/20 text-[10px] flex items-center justify-center font-bold text-primary">
+                                                    EL</div>
+                                                <span class="text-sm">Emma Laine</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-500">Oct 22, 2023</td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span
+                                                class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-green-100 text-green-700 uppercase">Published</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <p class="font-medium truncate max-w-[240px]">The Rise of Minimalist
+                                                Architecture</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <div
+                                                    class="h-6 w-6 rounded-full bg-primary/20 text-[10px] flex items-center justify-center font-bold text-primary">
+                                                    DO</div>
+                                                <span class="text-sm">David Owen</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-500">Oct 21, 2023</td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span
+                                                class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 uppercase">Review</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Recent Activity -->
+                    <div
+                        class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800">
+                            <h3 class="font-bold text-lg">Recent Activity</h3>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <div class="flex gap-4">
+                                <div class="relative">
+                                    <div
+                                        class="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-[20px]">chat</span>
+                                    </div>
+                                    <div
+                                        class="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 border-2 border-white dark:border-slate-900 rounded-full">
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm"><strong>Sarah Chen</strong> commented on "The Future of AI..."
+                                    </p>
+                                    <p class="text-xs text-slate-400 mt-1 italic">"Great insights on the new LLM
+                                        models!"</p>
+                                    <p class="text-[10px] text-slate-500 mt-2 uppercase font-bold tracking-tighter">2
+                                        mins ago</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                    class="h-10 w-10 rounded-full bg-indigo-600/10 text-indigo-600 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-[20px]">person_add</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm"><strong>New user</strong> registered as a Content Contributor.
+                                    </p>
+                                    <p class="text-[10px] text-slate-500 mt-2 uppercase font-bold tracking-tighter">45
+                                        mins ago</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                    class="h-10 w-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-[20px]">system_update_alt</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm"><strong>System Update</strong> successfully completed.</p>
+                                    <p class="text-xs text-slate-400 mt-1">Core engine updated to v2.4.0</p>
+                                    <p class="text-[10px] text-slate-500 mt-2 uppercase font-bold tracking-tighter">3
+                                        hours ago</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                    class="h-10 w-10 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-[20px]">report</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm"><strong>Flagged content</strong> reported in Category: Tech.</p>
+                                    <p class="text-[10px] text-slate-500 mt-2 uppercase font-bold tracking-tighter">5
+                                        hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800">
+                            <button
+                                class="w-full text-center py-2 text-sm font-semibold text-slate-500 hover:text-primary transition-colors">
+                                View Full Activity Log
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-    <!-- Edit User Modal -->
-    <div aria-labelledby="modal-title" aria-modal="true"
-        class="fixed inset-0 z-50 flex items-center justify-center hidden" id="edit-user-modal" role="dialog">
-        <!-- Overlay -->
-        <div class="fixed inset-0 modal-overlay transition-opacity" onclick="toggleModal('edit-user-modal', false)">
-        </div>
-        <!-- Modal Content -->
-        <div
-            class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden transform transition-all border border-slate-200 dark:border-slate-800">
-            <!-- Modal Header -->
-            <div
-                class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white" id="modal-title">Edit User Profile</h3>
-                <button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                    onclick="toggleModal('edit-user-modal', false)">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-            <!-- Modal Body -->
-            <form class="p-6 space-y-5">
-                <!-- User Name -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
-                        for="edit-name">User Name</label>
-                    <input
-                        class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                        id="edit-name" type="text" value="Sarah Chen" />
-                </div>
-                <!-- Email Address -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
-                        for="edit-email">Email Address</label>
-                    <input
-                        class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                        id="edit-email" type="email" value="sarah.chen@blogfusion.io" />
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Role Dropdown -->
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
-                            for="edit-role">Role</label>
-                        <select
-                            class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none appearance-none"
-                            id="edit-role">
-                            <option selected="" value="admin">Admin</option>
-                            <option value="author">Author</option>
-                            <option value="user">User</option>
-                        </select>
-                    </div>
-                    <!-- Status Select -->
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
-                            for="edit-status">Status</label>
-                        <select
-                            class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none appearance-none"
-                            id="edit-status">
-                            <option selected="" value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-                </div>
-            </form>
-            <!-- Modal Footer -->
-            <div
-                class="px-6 py-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
-                <button
-                    class="px-5 py-2 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
-                    onclick="toggleModal('edit-user-modal', false)">
-                    Cancel
-                </button>
-                <button
-                    class="px-5 py-2 text-sm font-bold bg-primary hover:bg-primary-hover text-white rounded-xl shadow-lg shadow-primary/20 transition-all"
-                    onclick="toggleModal('edit-user-modal', false)">
-                    Save Changes
-                </button>
-            </div>
-        </div>
-    </div>
-    <script>
-        function toggleModal(modalId, show) {
-            const modal = document.getElementById(modalId);
-            if (show) {
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            } else {
-                modal.classList.add('hidden');
-                document.body.style.overflow = 'auto';
-            }
-        }
-    </script>
+    <script src="../assets/js/admin.js"></script>
 </body>
 
 </html>
