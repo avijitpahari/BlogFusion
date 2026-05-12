@@ -39,7 +39,8 @@
                     <div class="relative group">
                         <div
                             class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                            <span class="material-symbols-outlined text-xl">search</span> </div> <input
+                            <span class="material-symbols-outlined text-xl">search</span>
+                        </div> <input
                             class="block w-full pl-10 pr-3 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                             placeholder="Search articles, topics..." type="text" />
                     </div>
@@ -50,17 +51,22 @@
                         <a class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
                             href="#">Explore</a> <a
                             class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
-                            href="#">Bookmarks</a> </div>
+                            href="#">Bookmarks</a>
+                    </div>
                     <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden lg:block mx-2"></div>
-                    <!-- Create Button --> <!-- Mobile Search Icon (only visible on small screens) --> <button
-                        class="sm:hidden p-2 text-slate-600 dark:text-slate-400"> <span
-                            class="material-symbols-outlined">search</span> </button> <!-- User Profile --> <button
-                        class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm shadow-primary/20">Login</button>
+                    <!-- Create Button -->
+                    <!-- Mobile Search Icon (only visible on small screens) -->
+                    <button class="sm:hidden p-2 text-slate-600 dark:text-slate-400">
+                        <span class="material-symbols-outlined">search</span>
+                    </button>
+                    <!-- User Profile -->
+                    <a href="pages/login.php"
+                        class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm shadow-primary/20">Login</a>
                 </div>
             </div>
         </div>
     </nav>
-    
+
 </body>
 
 </html>

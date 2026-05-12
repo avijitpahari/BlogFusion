@@ -51,6 +51,7 @@ include "../include/admin_nav_sidebar.php";
     <div class="flex h-screen overflow-hidden">
         <!-- SideNavBar -->
         <?=slidebar('posts');?>
+        <div id="overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
         <!-- Main Content Area -->
         <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
             <!-- Top Navbar -->

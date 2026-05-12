@@ -1,57 +1,16 @@
 <?php
 // ==== Use for Pagination data ======
-// function paginate($table, $limit = 5)
-// {
-//     global $conn;
-//     // current page
-//     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-//     if ($page < 1) $page = 1;
 
-//     $offset = ($page - 1) * $limit;
 
-//     // fetch data
-//     $query = "SELECT * FROM $table LIMIT $limit OFFSET $offset";
-//     $result = mysqli_query($conn, $query);
-//     $data = mysqli_num_rows($result) ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
 
-//     // total count
-//     $total_query = "SELECT COUNT(*) as total FROM $table";
-//     $total_result = mysqli_query($conn, $total_query);
-//     $total_row = mysqli_fetch_assoc($total_result);
-
-//     $total_records = $total_row['total'];
-//     $total_pages = ceil($total_records / $limit);
-
-//     return [
-//         // 'data' => $result,
-//         'data' => $data,
-//         'total_pages' => $total_pages,
-//         'current_page' => $page
-//     ];
-// }
-
-function paginate($table, $limit = 4)
-{
-    global $conn;
+function paginate($data,$total_records,$page,$offset, $limit = 4){
 
     // current page
-    $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-    if ($page < 1)
-        $page = 1;
+    // $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+    // if ($page < 1)
+    //     $page = 1;
 
-    $offset = ($page - 1) * $limit;
-
-    // fetch data
-    $query = "SELECT * FROM $table LIMIT $limit OFFSET $offset";
-    $result = mysqli_query($conn, $query);
-    $data = mysqli_num_rows($result) ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
-
-    // total count
-    $total_query = "SELECT COUNT(*) as total FROM $table";
-    $total_result = mysqli_query($conn, $total_query);
-    $total_row = mysqli_fetch_assoc($total_result);
-
-    $total_records = $total_row['total'];
+    // $offset = ($page - 1) * $limit;
     $total_pages = ceil($total_records / $limit);
 
     return [
@@ -64,55 +23,28 @@ function paginate($table, $limit = 4)
     ];
 }
 
+
+
 // ==== Use For Pagination Links ======
-// function pagination_links($total_pages, $current_page)
-// {
 
-//     echo '<ul class="pagination">';
 
-//     // Previous
-//     if ($current_page > 1) {
-//         echo '<li class="page-item">
-//         <a class="page-link" href="?page=' . ($current_page - 1) . '">Previous</a>
-//         </li>';
-//     }
-
-//     // numbers
-//     for ($i = 1; $i <= $total_pages; $i++) {
-//         $active = ($i == $current_page) ? 'active' : '';
-
-//         echo '<li class="page-item ' . $active . '">
-//         <a class="page-link" href="?page=' . $i . '">' . $i . '</a>
-//         </li>';
-//     }
-
-//     // Next
-//     if ($current_page < $total_pages) {
-//         echo '<li class="page-item">
-//         <a class="page-link" href="?page=' . ($current_page + 1) . '">Next</a>
-//         </li>';
-//     }
-
-//     echo '</ul>';
-// }
-
-function pagination_links($totalPages, $limit, $total_records, $offset, $data_count)
+function pagination_links($totalPages, $limit, $total_records, $offset)
 {
 
     $currentPage = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 
 
-    // 👉 start & end calculate
+    //  start & end calculate
     $start = $currentPage - 1;
     $end = $currentPage + 1;
 
-    // 👉 fix start
+    //  fix start
     if ($start < 1) {
         $start = 1;
         $end = min(3, $totalPages);
     }
 
-    // 👉 fix end
+    //  fix end
     if ($end > $totalPages) {
         $end = $totalPages;
         $start = max(1, $totalPages - 2);
@@ -132,7 +64,7 @@ function pagination_links($totalPages, $limit, $total_records, $offset, $data_co
     echo '<div class="px-6 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 flex items-center justify-between">';
     echo '<div class="flex items-center gap-2">';
 
-    // 🔙 PREVIOUS BUTTON
+    //  PREVIOUS BUTTON
     if ($currentPage == 1) {
         echo '<button class="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 rounded-lg opacity-50" disabled>
             <span class="material-symbols-outlined text-[18px]">chevron_left</span>
@@ -145,10 +77,10 @@ function pagination_links($totalPages, $limit, $total_records, $offset, $data_co
           </a>';
     }
 
-    // 🔢 PAGE NUMBERS
+    //  PAGE NUMBERS
     for ($i = $start; $i <= $end; $i++) {
 
-        // 👉 Active Page
+        //  Active Page
         if ($i == $currentPage) {
             echo '<button class="h-9 w-9 flex items-center justify-center bg-primary text-white rounded-lg font-bold text-sm shadow-sm">'
                 . $i .
@@ -162,7 +94,7 @@ function pagination_links($totalPages, $limit, $total_records, $offset, $data_co
         }
     }
 
-    // 🔜 NEXT BUTTON
+    //  NEXT BUTTON
     if ($currentPage == $totalPages) {
         echo '<button class="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 rounded-lg opacity-50" disabled>
             <span class="material-symbols-outlined text-[18px]">chevron_right</span>

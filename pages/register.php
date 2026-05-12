@@ -1,3 +1,5 @@
+<?php session_start(); ?>
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -62,30 +64,30 @@
   <main class="max-w-md w-full glass-effect rounded-2xl shadow-xl overflow-hidden border border-white/20"
     data-purpose="signup-card">
     <!-- BEGIN: Header Section -->
-    <?php if (isset($_GET['msg']) && $_GET['msg'] == "exists"){ ?>
+    <?php if (isset($_GET['msg']) && $_GET['msg'] == "exists") { ?>
 
-            <div id="alertBox" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-                <div
-                    class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl shadow-lg">
-                    <span class="material-symbols-outlined text-green-500">check_circle</span>
-                    <p class="text-sm font-semibold">Email already exists</p>
-                </div>
-            </div>
+      <div id="alertBox" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
+        <div
+          class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl shadow-lg">
+          <span class="material-symbols-outlined text-green-500">check_circle</span>
+          <p class="text-sm font-semibold">Email already exists</p>
+        </div>
+      </div>
 
-            <script>
-                setTimeout(() => {
-                    document.getElementById("alertBox")?.remove();
-                }, 2000);
+      <script>
+        setTimeout(() => {
+          document.getElementById("alertBox")?.remove();
+        }, 2000);
 
-                if (window.history.replaceState) {
-                  const url = new URL(window.location);
-                  url.searchParams.delete("msg"); // remove msg parameter
-                  window.history.replaceState({}, document.title, url.pathname);
-                }
-            </script>
-            
+        if (window.history.replaceState) {
+          const url = new URL(window.location);
+          url.searchParams.delete("msg"); // remove msg parameter
+          window.history.replaceState({}, document.title, url.pathname);
+        }
+      </script>
 
-        <?php } ?>
+
+    <?php } ?>
 
     <header class="p-8 text-center bg-gradient-to-br from-primary to-secondary text-white">
       <h1 class="text-3xl font-bold tracking-tight">Blog Fusion</h1>
@@ -97,105 +99,136 @@
       enctype="multipart/form-data">
       <!-- Full Name Field -->
       <div>
-        <label class="block text-sm font-semibold mb-2" for="full-name">Full Name</label>
+
+        <label class="block text-sm font-semibold mb-2" for="full_name">Full Name</label>
         <input
           class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition duration-200"
-          id="full-name" name="name" placeholder="John Doe" required="" type="text" />
+          id="full_name" name="name" placeholder="John Doe" required="" type="text" />
       </div>
       <!-- Email Field -->
-      <div>
+      <div class="relative">
         <label class="block text-sm font-semibold mb-2" for="email">Email Address</label>
-        <input
-          class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition duration-200"
-          id="email" name="email" placeholder="hello@example.com" required="" type="email" />
+        <div class="relative">
+          <input
+            class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition duration-200 pr-24"
+            id="email" name="email" placeholder="hello@example.com" required type="email" />
+          <button
+            class="absolute inset-y-0 right-0 pr-3 flex items-center text-primary font-semibold text-sm hover:text-indigo-700 transition-colors"
+            type="button" onclick="showOTP()" id="sendOtpBtn">
+            <span id="btnText">Send OTP</span>
+            <span id="loader" style="display: none;">
+              <i class="fa fa-spinner fa-spin"></i> Loading...
+            </span>
+          </button>
+        </div>
       </div>
-      <!-- Password Fields Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-semibold mb-2" for="password">Password</label>
+      <div class="flex gap-3 items-end hidden" id="otp_cointener">
+        <div class="flex-1">
+          <label class="block text-sm font-semibold mb-2" for="otp">Enter OTP</label>
           <div class="relative">
             <input
-              class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition duration-200 pr-10"
-              id="password" name="password" required="" type="password" />
-            <button
-              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
-              onclick="togglePasswordVisibility('password', this)" type="button">
-              <span class="material-symbols-outlined text-xl">visibility</span>
-            </button>
+              class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition duration-200 pr-16"
+              id="otp" name="otp" placeholder="123456" type="number" />
+            <span id="timer" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 text-xs font-mono">
+              02:00
+            </span>
           </div>
         </div>
-        <div>
-          <label class="block text-sm font-semibold mb-2" for="confirm-password">Confirm Password</label>
-          <div class="relative">
-            <input
-              class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition duration-200 pr-10"
-              id="confirm-password" name="confirm-password" required="" type="password" />
-            <button
-              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
-              onclick="togglePasswordVisibility('confirm-password', this)" type="button">
-              <span class="material-symbols-outlined text-xl">visibility</span>
-            </button>
-          </div>
-        </div>
+        <button
+          class="bg-primary hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow transition duration-200 h-[50px] whitespace-nowrap"
+          type="button" onclick="verifyOTP()" id="verifyEmailBtn">
+          Verify Email
+        </button>
       </div>
-      <!-- Role Selection Toggle -->
-      <div class="space-y-3" data-purpose="role-selector">
-        <label class="block text-sm font-semibold mb-2">Join as <span class="text-primary transition-all duration-300"
-            id="role-text">User</span></label>
-        <div class="relative flex p-1 bg-gray-100 rounded-xl border border-gray-200 w-full">
-          <!-- Sliding Background Highlight -->
-          <div
-            class="absolute top-1 left-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-transform duration-300 ease-out transform translate-x-0"
-            id="role-highlight"></div>
-          <!-- Buttons -->
-          <button class="relative flex-1 py-2 text-sm font-bold transition-colors duration-300 text-primary z-10"
-            id="btn-user" type="button">
-            USER
-          </button>
-          <button class="relative flex-1 py-2 text-sm font-bold transition-colors duration-300 text-gray-500 z-10"
-            id="btn-author" type="button">
-            AUTHOR
-          </button>
-          <!-- Hidden input to store value -->
-          <input id="role-input" name="role" type="hidden" value="user" />
-        </div>
-      </div>
-      <!-- Profile Picture Upload -->
-      <div>
-        <label class="block text-sm font-semibold mb-2">Profile Picture</label>
-        <div
-          class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-accent transition duration-200">
-          <div class="space-y-1 text-center w-full relative group">
-            <!-- Placeholder UI -->
-            <div class="block" id="upload-placeholder">
-              <svg aria-hidden="true" class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
-                viewbox="0 0 48 48">
-                <path
-                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-              </svg>
-              <div class="flex text-sm text-gray-600 justify-center">
-                <label
-                  class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-indigo-500"
-                  for="file-upload">
-                  <span>Upload a file</span>
-                  <input accept="image/*" class="sr-only" id="file-upload" name="image"
-                    onchange="handleImagePreview(event)" type="file" />
-                </label>
-                <p class="pl-1">or drag and drop</p>
-              </div>
-              <p class="text-xs text-gray-500">PNG, JPG up to 10MB</p>
-            </div>
-            <!-- Image Preview UI -->
-            <div class="hidden relative inline-block mx-auto" id="preview-container">
-              <img alt="Profile Preview"
-                class="h-32 w-32 object-cover rounded-full border-4 border-white shadow-md mx-auto" id="image-preview"
-                src="" />
+      <div id="all_details" class="hidden">
+        <!-- Password Fields Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold mb-2" for="password">Password</label>
+            <div class="relative">
+              <input
+                class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition duration-200 pr-10"
+                id="password" name="password" required="" type="password" />
               <button
-                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors"
-                onclick="removeImage()" type="button">
-                <span class="material-symbols-outlined text-sm">close</span>
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                onclick="togglePasswordVisibility('password', this)" type="button">
+                <span class="material-symbols-outlined text-xl">visibility</span>
               </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2" for="confirm-password">Confirm Password</label>
+            <div class="relative">
+              <input
+                class="w-full px-4 py-3 rounded-lg border-gray-300 focus:ring-primary focus:border-primary transition duration-200 pr-10"
+                id="confirm-password" name="confirm-password" required="" type="password" />
+              <button
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                onclick="togglePasswordVisibility('confirm-password', this)" type="button">
+                <span class="material-symbols-outlined text-xl">visibility</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Role Selection Toggle -->
+        <div class="space-y-3" data-purpose="role-selector">
+          <label class="block text-sm font-semibold mb-2">Join as <span class="text-primary transition-all duration-300"
+              id="role-text">User</span></label>
+          <div class="relative flex p-1 bg-gray-100 rounded-xl border border-gray-200 w-full">
+            <!-- Sliding Background Highlight -->
+            <div
+              class="absolute top-1 left-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-transform duration-300 ease-out transform translate-x-0"
+              id="role-highlight"></div>
+            <!-- Buttons -->
+            <button class="relative flex-1 py-2 text-sm font-bold transition-colors duration-300 text-primary z-10"
+              id="btn-user" type="button">
+              USER
+            </button>
+            <button class="relative flex-1 py-2 text-sm font-bold transition-colors duration-300 text-gray-500 z-10"
+              id="btn-author" type="button">
+              AUTHOR
+            </button>
+            <!-- Hidden input to store value -->
+            <input id="role-input" name="role" type="hidden" value="user" />
+          </div>
+        </div>
+        <!-- Profile Picture Upload -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">Profile Picture</label>
+          <div
+            class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-accent transition duration-200">
+            <div class="space-y-1 text-center w-full relative group">
+              <!-- Placeholder UI -->
+              <div class="block" id="upload-placeholder">
+                <svg aria-hidden="true" class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
+                  viewbox="0 0 48 48">
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                </svg>
+                <div class="flex text-sm text-gray-600 justify-center">
+                  <label
+                    class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-indigo-500"
+                    for="file-upload">
+                    <span>Upload a file</span>
+                    <input accept="image/*" class="sr-only" id="file-upload" name="image"
+                      onchange="handleImagePreview(event)" type="file" />
+                  </label>
+                  <p class="pl-1">or drag and drop</p>
+                </div>
+                <p class="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+              </div>
+              <!-- Image Preview UI -->
+              <div class="hidden relative inline-block mx-auto" id="preview-container">
+                <img alt="Profile Preview"
+                  class="h-32 w-32 object-cover rounded-full border-4 border-white shadow-md mx-auto" id="image-preview"
+                  src="" />
+                <button
+                  class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors"
+                  onclick="removeImage()" type="button">
+                  <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -217,91 +250,108 @@
   </main>
 
 
-
-  <!-- END: Signup Card Container -->
   <!-- BEGIN: Interactive Logic -->
-  <script data-purpose="form-interactivity">
-    const roleTextDisplay = document.getElementById('role-text');
-    const btnUser = document.getElementById('btn-user');
-    const btnAuthor = document.getElementById('btn-author');
-    const highlight = document.getElementById('role-highlight');
-    const roleInput = document.getElementById('role-input');
-
-    function setRole(role) {
-      if (role === 'user') {
-        roleTextDisplay.textContent = 'User';
-        roleInput.value = 'user';
-        highlight.style.transform = 'translateX(0)';
-        btnUser.classList.add('text-primary');
-        btnUser.classList.remove('text-gray-500');
-        btnAuthor.classList.add('text-gray-500');
-        btnAuthor.classList.remove('text-primary');
-      } else {
-        roleTextDisplay.textContent = 'Author';
-        roleInput.value = 'author';
-        highlight.style.transform = 'translateX(100%)';
-        btnAuthor.classList.add('text-primary');
-        btnAuthor.classList.remove('text-gray-500');
-        btnUser.classList.add('text-gray-500');
-        btnUser.classList.remove('text-primary');
-      }
-    }
-
-    btnUser.addEventListener('click', () => setRole('user'));
-    btnAuthor.addEventListener('click', () => setRole('author'));
-
-    // Handle file upload preview or name display
-    const fileInput = document.getElementById('file-upload');
-    if (fileInput) {
-      fileInput.addEventListener('change', function () {
-        if (this.files && this.files[0]) {
-          console.log('File selected:', this.files[0].name);
-        }
-      });
-    }
-  </script>
-  <!-- END: Interactive Logic -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="../assets/js/register.js"></script>
   <script>
-    function togglePasswordVisibility(inputId, button) {
-      const input = document.getElementById(inputId);
-      const icon = button.querySelector('.material-symbols-outlined');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.textContent = 'visibility_off';
-      } else {
-        input.type = 'password';
-        icon.textContent = 'visibility';
-      }
+    function user_exists() {
+
+      let email = document.getElementById("email").value;
+
+      fetch("../include/user_exits.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `email=${email}`
+      })
+        .then(res => res.text())
+        .then(data => {
+          console.log(data);
+        });
+
     }
-  </script>
-  <script>
-    function handleImagePreview(event) {
-      const input = event.target;
-      const placeholder = document.getElementById('upload-placeholder');
-      const previewContainer = document.getElementById('preview-container');
-      const previewImg = document.getElementById('image-preview');
+    function showOTP() {
+      startTimer(
+        <?php echo 600;
+        $_SESSION['otp_time'] = time(); ?>);
+      console.log(<?= $_SESSION['otp_time'] ?>);
+      let email = document.getElementById("email").value;
+      let name = document.getElementById("full_name").value;
+      const btnText = document.getElementById('btnText');
+      const loader = document.getElementById('loader');
+      const sendBtn = document.getElementById('sendOtpBtn');
+      btnText.style.display = 'none';
+      loader.style.display = 'inline-block';
+      sendBtn.disabled = true;
 
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          previewImg.src = e.target.result;
-          placeholder.classList.add('hidden');
-          previewContainer.classList.remove('hidden');
-        };
-        reader.readAsDataURL(input.files[0]);
+      if (email === "") {
+        Swal.fire("Error", "Enter email first", "error");
+        return;
       }
+
+      // show OTP field
+      document.getElementById("otp_cointener").classList.remove("hidden");
+      otp = Math.floor(100000 + Math.random() * 900000);
+      fetch("../include/send_mail.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `name=${name}&email=${email}&otp=${otp}`,
+      })
+        .then(res => res.text())
+        .then(data => {
+          console.log(data);
+
+          Swal.fire("Success", "OTP Sent Successfully ", "success");
+        })
+        .catch(err => {
+          console.error(err);
+          Swal.fire("Error", "Mail not sent ", "error");
+        })
+        .finally(() => {
+          btnText.style.display = 'inline-block';
+          loader.style.display = 'none';
+          sendBtn.disabled = false;
+        });
     }
 
-    function removeImage() {
-      const input = document.getElementById('file-upload');
-      const placeholder = document.getElementById('upload-placeholder');
-      const previewContainer = document.getElementById('preview-container');
-      const previewImg = document.getElementById('image-preview');
+    function verifyOTP() {
+      let otp = document.getElementById("otp").value;
 
-      input.value = '';
-      previewImg.src = '';
-      previewContainer.classList.add('hidden');
-      placeholder.classList.remove('hidden');
+      fetch("../include/verify_otp.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "otp=" + otp,
+      })
+        .then(res => res.text())
+        .then(data => {
+
+          if (data === "success") {
+            Swal.fire("Verified!", "Email verified ✅", "success");
+
+            document.getElementById("all_details").classList.remove("hidden");
+            document.getElementById("otp_cointener").classList.add("hidden");
+            const sendOtpLink = document.getElementById('sendOtpBtn');
+            sendOtpLink.innerText = 'Verified';
+            sendOtpLink.style.color = '#28a745';
+            sendOtpLink.style.fontWeight = 'bold';
+            sendOtpLink.style.pointerEvents = 'none';
+            sendOtpLink.onclick = null;
+            document.getElementById("email").readOnly = true;
+            document.getElementById("full_name").readOnly = true;
+
+          } else if (data === "expired") {
+            Swal.fire("Expired", "OTP expired ", "error");
+
+          } else {
+            Swal.fire("Error", "Invalid OTP ", "error");
+          }
+
+        });
     }
   </script>
 </body>

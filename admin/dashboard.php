@@ -1,9 +1,11 @@
-<?php include "../include/session.php"; 
+<?php include "../include/session.php";
 requireAdmin();
 include "../include/db.php";
 include "../include/admin_nav_sidebar.php";
-
-
+$total_users=total($conn,'users')['total'];
+$total_posts=total($conn,'posts')['total'];
+$total_categories=total($conn,'categories')['total'];
+$total_comments=total($conn,'comments')['total'];
 
 ?>
 
@@ -48,18 +50,19 @@ include "../include/admin_nav_sidebar.php";
             },
         }
     </script>
-    
-   <link rel="stylesheet" href="../assets/css/admin.css"> 
+
+    <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
     <div class="flex h-screen overflow-hidden">
         <!-- SideNavBar -->
-        <?=slidebar('dashboard');?>
+        <?= slidebar('dashboard'); ?>
+        <div id="overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
         <!-- Main Content Area -->
         <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
             <!-- Top Navbar -->
-            <?=ad_navbar();?>
+            <?= ad_navbar(); ?>
             <!-- Dashboard Content -->
             <div class="flex-1 overflow-y-auto p-8">
                 <div class="flex items-center justify-between mb-8">
@@ -86,7 +89,7 @@ include "../include/admin_nav_sidebar.php";
                                 class="text-green-500 text-xs font-bold bg-green-50 px-2 py-1 rounded-full">+12%</span>
                         </div>
                         <p class="text-slate-500 text-sm font-medium">Total Users</p>
-                        <h3 class="text-2xl font-bold mt-1">12,840</h3>
+                        <h3 class="text-2xl font-bold mt-1"><?=$total_users?></h3>
                     </div>
                     <div
                         class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -98,7 +101,7 @@ include "../include/admin_nav_sidebar.php";
                             <span class="text-green-500 text-xs font-bold bg-green-50 px-2 py-1 rounded-full">+4%</span>
                         </div>
                         <p class="text-slate-500 text-sm font-medium">Total Posts</p>
-                        <h3 class="text-2xl font-bold mt-1">1,452</h3>
+                        <h3 class="text-2xl font-bold mt-1"><?=$total_posts?></h3>
                     </div>
                     <div
                         class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -110,7 +113,7 @@ include "../include/admin_nav_sidebar.php";
                             <span class="text-slate-400 text-xs font-bold bg-slate-50 px-2 py-1 rounded-full">0%</span>
                         </div>
                         <p class="text-slate-500 text-sm font-medium">Categories</p>
-                        <h3 class="text-2xl font-bold mt-1">24</h3>
+                        <h3 class="text-2xl font-bold mt-1"><?=$total_categories?></h3>
                     </div>
                     <div
                         class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -122,7 +125,7 @@ include "../include/admin_nav_sidebar.php";
                             <span class="text-red-500 text-xs font-bold bg-red-50 px-2 py-1 rounded-full">-2%</span>
                         </div>
                         <p class="text-slate-500 text-sm font-medium">Comments</p>
-                        <h3 class="text-2xl font-bold mt-1">45,902</h3>
+                        <h3 class="text-2xl font-bold mt-1"><?=$total_comments?></h3>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -300,6 +303,7 @@ include "../include/admin_nav_sidebar.php";
         </main>
     </div>
     <script src="../assets/js/admin.js"></script>
+    
 </body>
 
 </html>

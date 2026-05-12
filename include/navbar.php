@@ -6,7 +6,7 @@ $user_id = $_SESSION['user_id'];
 $query = "SELECT * FROM users WHERE id = '$user_id'";
 $result = mysqli_query($conn, $query);
 $data = mysqli_fetch_assoc($result);
-$image=$data['profile_image'];
+$image = $data['profile_image'];
 ?>
 
 
@@ -96,31 +96,48 @@ $image=$data['profile_image'];
                     </div>
                     <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden lg:block mx-2"></div>
                     <!-- Create Button -->
-                    <button
+                    <!-- <button
                         class="hidden md:flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm shadow-primary/20">
                         <span class="material-symbols-outlined text-sm">add_circle</span>
                         <span>Create Post</span>
-                    </button>
+                    </button> -->
                     <!-- Mobile Search Icon (only visible on small screens) -->
                     <button class="sm:hidden p-2 text-slate-600 dark:text-slate-400">
                         <span class="material-symbols-outlined">search</span>
                     </button>
-                    <!-- User Profile -->
-                    <div class="flex items-center gap-3 pl-2 cursor-pointer group">
-                        <div class="relative">
-                            <img alt="User profile avatar"
-                                class="h-9 w-9 rounded-full object-cover border-2 border-transparent group-hover:border-primary transition-all shadow-sm"
-                                src="<?php if($image){
-                                    echo  '../'.$image;
-                                }else{
-                                    echo '../upload/profile-images/default.png';
-                                }
-                                ?>
-                                ">
-                            
-                            <div class="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white dark:border-background-dark rounded-full">
+                    <div class="relative group">
+
+                        <!-- Profile Image -->
+                        <div class="flex items-center gap-3 pl-2 cursor-pointer">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-sm font-semibold"><?= $data['name'] ?></p>
                             </div>
+                            <div class="relative">
+                                <img class="h-9 w-9 rounded-full object-cover border-2 border-transparent group-hover:border-primary transition-all"
+                                    src="<?php echo $image ? '../' . $image : '../upload/profile-images/default.png'; ?>">
+
+                                <div
+                                    class="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white rounded-full">
+                                </div>
+                            </div>
+                            
                         </div>
+
+
+                        <!-- Dropdown -->
+                        <div
+                            class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-[60] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right group-hover:translate-y-0 translate-y-2">
+
+                            <a class="flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-100">
+                                Profile
+                            </a>
+
+                            <a class="flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-100">
+                                Logout
+                            </a>
+
+                        </div>
+
                     </div>
                 </div>
             </div>

@@ -4,9 +4,30 @@ include "../include/db.php";
 include "../include/pagination.php";
 include "../include/admin_nav_sidebar.php";
 
+// logic data
+$table = 'users';
+$limit = 4;
+// current page
+$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+if ($page < 1)
+    $page = 1;
+
+$offset = ($page - 1) * $limit;
+
+// fetch data
+$query = "SELECT * FROM $table LIMIT $limit OFFSET $offset";
+$result = mysqli_query($conn, $query);
+$data = mysqli_num_rows($result) ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
+
+// total count
+$total_query = "SELECT COUNT(*) as total FROM $table";
+$total_result = mysqli_query($conn, $total_query);
+$total_row = mysqli_fetch_assoc($total_result);
+$total_records = $total_row['total'];
+
 
 // call function
-$pagination = paginate('users');
+$pagination = paginate($data, $total_records, $page, $offset);
 $data24 = $pagination['data'];
 $total_pages = $pagination['total_pages'];
 $page = $pagination['current_page'];
@@ -60,12 +81,50 @@ $offset = $pagination['offset'];
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
     <div class="flex h-screen overflow-hidden">
+        <?php if (isset($_GET['msg'])) { ?>
+
+            <div id="alertBox" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
+                <div
+                    class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl shadow-lg">
+                    <span class="material-symbols-outlined text-green-500">check_circle</span>
+                    <p class="text-sm font-semibold">
+                        <?php
+                        switch ($_GET['msg']) {
+                            case "email":
+                                echo 'Email already exists. Please enter new email';
+                                break;
+                            case "p_not_match":
+                                echo 'Password not match. Please enter again';
+                                break;
+                            case "u_not_find":
+                                echo 'Email not match. Please enter again';
+                                break;
+                        }
+                        ?>
+                    </p>
+                </div>
+            </div>
+
+            <script>
+                setTimeout(() => {
+                    document.getElementById("alertBox")?.remove();
+                }, 2000);
+                if (window.history.replaceState) {
+                    const url = new URL(window.location);
+                    url.searchParams.delete("msg"); // remove msg parameter
+                    window.history.replaceState({}, document.title, url.pathname);
+                }
+            </script>
+
+
+        <?php } ?>
         <!-- Sidebar -->
-        <?=slidebar('users');?>
+        <?= slidebar('users'); ?>
+        <div id="overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
         <!-- Main Content -->
         <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
             <!-- Navbar -->
-            <?=ad_navbar();?>
+            <?= ad_navbar(); ?>
             <div class="flex-1 overflow-y-auto p-8">
                 <!-- Page Header -->
                 <div class="flex items-center justify-between mb-8">
@@ -74,7 +133,8 @@ $offset = $pagination['offset'];
                         <p class="text-slate-500">Manage platform contributors and account access levels.</p>
                     </div>
                     <button
-                        class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
+                        class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all"
+                        onclick="newuser();">
                         <span class="material-symbols-outlined text-[20px]">add</span>
                         <span>Add User</span>
                     </button>
@@ -163,14 +223,15 @@ $offset = $pagination['offset'];
                                         </td>
 
                                         <!-- ACTIONS -->
-                                        <td class="px-6 py-4 text-right">
+                                        <td class="px-6 py-4 text-right" id="action_btn">
                                             <div class="flex justify-end gap-2">
                                                 <button class="p-2 hover:text-primary">
                                                     <span class="material-symbols-outlined"
                                                         onclick='loopdata(<?php echo json_encode($row); ?>);'>edit_note</span>
                                                 </button>
                                                 <button class="p-2 hover:text-red-500">
-                                                    <span class="material-symbols-outlined">delete</span>
+                                                    <span class="material-symbols-outlined"
+                                                        onclick="delete_user(<?= $row['id']; ?>);">delete</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -183,12 +244,11 @@ $offset = $pagination['offset'];
                         </table>
                     </div>
                     <?php
-                    $page=pagination_links(
+                    $page = pagination_links(
                         $total_pages,
                         $limit,
                         $total_records,
-                        $offset,
-                        count($data24)
+                        $offset
                     );
                     ?>
                 </div>
@@ -216,7 +276,8 @@ $offset = $pagination['offset'];
                 </button>
             </div>
             <!-- Modal Body -->
-            <form class="p-6 space-y-5" enctype="multipart/form-data" action="../actions/admin.php?page=<?php echo $_GET['page']??$page ;?>" method="POST">
+            <form class="p-6 space-y-5" enctype="multipart/form-data"
+                action="../actions/admin.php?page=<?php echo $_GET['page'] ?? $page; ?>" method="POST">
                 <input type="hidden" id="user-id" name="user_id" value="">
                 <!-- User Name -->
                 <div>
@@ -224,7 +285,7 @@ $offset = $pagination['offset'];
                         for="edit-name">User Name</label>
                     <input
                         class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                        id="edit-name" type="text" value="User Name" name="name" />
+                        id="edit-name" type="text" value="" name="name" />
                 </div>
                 <!-- Email Address -->
                 <div>
@@ -232,8 +293,11 @@ $offset = $pagination['offset'];
                         for="edit-email">Email Address</label>
                     <input
                         class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                        id="edit-email" type="email" value="default@gmail.com" name="email"/>
+                        id="edit-email" type="email" value="" name="email" />
                 </div>
+                <!-- Password -->
+                <input type="hidden" value="1234" name="password">
+
                 <div class="grid grid-cols-2 gap-4">
                     <!-- Role Dropdown -->
                     <div>
@@ -301,15 +365,18 @@ $offset = $pagination['offset'];
                     </button>
                     <button
                         class="px-5 py-2 text-sm font-bold bg-primary hover:bg-primary-hover text-white rounded-xl shadow-lg shadow-primary/20 transition-all"
-                        onclick="toggleModal('edit-user-modal', false)" type="submit" name="user-update">
+                        type="submit" name="user-update" onclick="toggleModal('edit-user-modal', false)"
+                        id="submit_btn">
                         Save Changes
                     </button>
                 </div>
             </form>
         </div>
+
     </div>
     <script src="../assets/js/admin.js"></script>
     <script>
+        let data = false;
         function toggleModal(modalId, show) {
             const modal = document.getElementById(modalId);
             if (show) {
@@ -320,25 +387,53 @@ $offset = $pagination['offset'];
                 document.body.style.overflow = 'auto';
             }
         }
+
+        function newuser() {
+            document.getElementById("submit_btn").name = "new_user";
+            if (data == true) {
+                document.getElementById("edit-name").value = "";
+                document.getElementById("edit-email").value = "";
+                document.getElementById("edit-role").value = "user";
+                document.getElementById("image-preview").src = "";
+                document.getElementById('upload-placeholder').classList.remove('hidden');
+                document.getElementById('preview-container').classList.add('hidden');
+                data = false;
+            }
+            toggleModal('edit-user-modal', true);
+        }
         function loopdata(row) {
+            document.getElementById("submit_btn").name = "user-update";
             let edit_name = document.getElementById("edit-name");
             let edit_email = document.getElementById("edit-email");
             let edit_role = document.getElementById("edit-role");
             let image_preview = document.getElementById("image-preview");
             let placeholder = document.getElementById('upload-placeholder');
             let previewContainer = document.getElementById('preview-container');
-            let id=document.getElementById('user-id');
+            let id = document.getElementById('user-id');
             let image = row.profile_image
             edit_name.value = row.name;
             edit_email.value = row.email;
             edit_role.value = row.role;
-            id.value=row.id;
+            id.value = row.id;
             image_preview.src = '../' + image;
-            document.getElementById('old-image').value=image;
+            document.getElementById('old-image').value = image;
             placeholder.classList.add('hidden');
             previewContainer.classList.remove('hidden');
+            data = true;
+
             toggleModal('edit-user-modal', true);
         }
+
+        function delete_user(id) {
+            if (!confirm('Are you sure to delete this User?')) {
+                return;
+            }
+
+            //console.log(id);
+
+            window.location.href = "../actions/admin.php?id=" + id + "&btn=user";
+        };
+
         // Handle file upload preview or name display
         const fileInput = document.getElementById('file-upload');
         if (fileInput) {
@@ -363,7 +458,7 @@ $offset = $pagination['offset'];
                 };
                 reader.readAsDataURL(input.files[0]);
             }
-            document.getElementById('image-preview').value=1;
+            document.getElementById('image-preview').value = 1;
         }
 
         function removeImage() {
@@ -376,6 +471,13 @@ $offset = $pagination['offset'];
             previewImg.src = '';
             previewContainer.classList.add('hidden');
             placeholder.classList.remove('hidden');
+        }
+        let model = "<?= $_GET["msg"] ?? ""; ?>";
+        if (model === "email") {
+            newuser();
+        }
+        else if (model === "success") {
+            alert("User updated successfully");
         }
     </script>
 </body>

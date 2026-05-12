@@ -1,132 +1,86 @@
-<?php
-include 'include/db.php';
-include 'test2.php';
-
-// call function
-$pagination = paginate('users');
-
-$data = $pagination['data'];
-$total_pages = $pagination['total_pages'];
-$page = $pagination['current_page'];
-$limit = $pagination['limit'];
-$total_records = $pagination['total_records'];
-$offset = $pagination['offset'];
-?>
-
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Job List</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#7C3AED", // Violet-600 (Primary from request)
-                        "primary-hover": "#6D28D9",
-                        "background-light": "#f8f7ff",
-                        "background-dark": "#0f172a",
-                        "indigo-accent": "#4F46E5",
-                    },
-                    fontFamily: {
-                        "display": ["Public Sans", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Account</title>
 </head>
-
-<body>
-
-    <div class="container mt-5">
-        <form method="GET" class="mb-3">
-
-            <!-- <select name="limit" onchange="this.form.submit()" class="form-select w-auto">
-
-                <option value="5" <?php //if ($limit == 5)
-                    //echo 'selected'; ?>>5</option>
-                <option value="10" <?php //if ($limit == 10)
-                    //echo 'selected'; ?>>10</option>
-                <option value="20" <?php //if ($limit == 20)
-                    //echo 'selected'; ?>>20</option>
-                <option value="50" <?php //if ($limit == 50)
-                    //echo 'selected'; ?>>50</option>
-
-            </select> -->
-
-        </form>
-        <h2 class="mb-4">Job List</h2>
-
-        <table class="table table-bordered table-striped">
-
-            <thead class="table-dark">
-                <tr>
-                    <th>SL</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                <?php if (!empty($data)) { ?>
-
-                    <?php foreach ($data as $key => $row) { ?>
-                        <tr>
-                            <td><?php echo ($offset + $key + 1); ?></td>
-                            <td><?php echo $row['name']; ?></td>
-                            <td><?php echo $row['email']; ?></td>
-                        </tr>
-                    <?php } ?>
-
-                <?php } else { ?>
-
+<body style="margin: 0; padding: 0; background-color: #f6f9fc; font-family: \'Helvetica Neue\', Helvetica, Arial, sans-serif;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f6f9fc; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;">
+                    
                     <tr>
-                        <td colspan="3" class="text-center">No Data Found</td>
+                        <td align="center" style="padding: 40px 0 20px 0;">
+                            <div style="background-color: #e4d3ff; width: 50px; height: 50px; border-radius: 12px; display: inline-block;">
+                                <img src="upload/site_image/logo2.png" width="32" height="32" style="padding: 9px; display: block;" alt="Logo">
+                            </div>
+                            <h2 style="margin: 15px 0 0 0; color: #1f2937; font-size: 30px;">Blog Fusion</h2>
+                            <!-- <p style="margin: 5px 0 0 0; font-size: 11px; color: #9ca3af; letter-spacing: 2px; text-transform: uppercase;">The Luminous Editor</p> -->
+                        </td>
                     </tr>
 
-                <?php } ?>
+                    <tr>
+                        <td align="center" style="padding: 10px 40px;">
+                            <h3 style="color: #111827; font-size: 20px; margin-bottom: 10px;">Verify your identity</h3>
+                            <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0;">
+                                Hello <span style="color: #7c3aed; font-weight: bold;">' . $name . '</span>, to finalize your account setup, please enter the 6-digit code below.
+                            </p>
+                            <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0;">
+                                <span style="color: #7c3aed; font-weight: bold;">OTP Expire in 10 minutes.</span>
+                            </p>
+                        </td>
+                    </tr>
 
-            </tbody>
+                    <tr>
+                        <td align="center" style="padding: 30px 20px;">
+                            <table border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td style="padding: 0 5px;">
+                                        <div align="center" style="width: 45px; height: 55px; line-height: 55px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 24px; font-weight: bold; color: #7c3aed; background-color: #f9fafb;">' . $otp[0] . '</div>
+                                    </td>
+                                    <td style="padding: 0 5px;">
+                                        <div  align="center" style="width: 45px; height: 55px; line-height: 55px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 24px; font-weight: bold; color: #7c3aed; background-color: #f9fafb;">' . $otp[1] . '</div>
+                                    </td>
+                                    <td style="padding: 0 5px;">
+                                        <div align="center" style="width: 45px; height: 55px; line-height: 55px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 24px; font-weight: bold; color: #7c3aed; background-color: #f9fafb;">' . $otp[2] . '</div>
+                                    </td>
+                                    <td style="padding: 0 5px;">
+                                        <div align="center" style="width: 45px; height: 55px; line-height: 55px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 24px; font-weight: bold; color: #7c3aed; background-color: #f9fafb;">' . $otp[3] . '</div>
+                                    </td>
+                                    <td style="padding: 0 5px;">
+                                        <div align="center" style="width: 45px; height: 55px; line-height: 55px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 24px; font-weight: bold; color: #7c3aed; background-color: #f9fafb;">' . $otp[4] . '</div>
+                                    </td>
+                                    <td style="padding: 0 5px;">
+                                        <div align="center" style="width: 45px; height: 55px; line-height: 55px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 24px; font-weight: bold; color: #7c3aed; background-color: #f9fafb;">' . $otp[5] . '</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
 
-        </table>
+                    <!-- <tr>
+                        <td align="center" style="padding: 0 40px 40px 40px;">
+                            <a href="#" style="background-color: #7c3aed; color: #ffffff; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">
+                                Copy OTP: ' . $otp[0] . $otp[1] . $otp[2] . $otp[3] . $otp[4] . $otp[5] . ' &rarr;
+                            </a>
+                        </td>
+                    </tr> -->
 
-        <!-- Pagination -->
-        <!-- <div class="d-flex justify-content-center"> -->
-        <?php
-        pagination_links(
-            $total_pages,
-            $page,
-            $limit,
-            $total_records,
-            $offset,
-            count($data)
-        );
-        ?>
-        <!-- </div> -->
-
-    </div>
-    
+                    <tr>
+                        <td align="center" style="padding: 30px 40px; background-color: #ffffff; border-top: 1px solid #f3f4f6;">
+                            <!-- <p style="margin: 0; font-size: 11px; color: #9ca3af; letter-spacing: 1px; text-transform: uppercase;">DIDN\'T RECEIVE A CODE?</p>
+                            <a href="#" style="color: #7c3aed; font-size: 14px; text-decoration: none; font-weight: 600; margin-top: 8px; display: inline-block;">Resend Verification Code</a> -->
+                            <p style="margin: 20px 0 0 0; font-size: 12px; color: #9ca3af; line-height: 1.4;">
+                                &copy; 2024 Blog Fusion. All rights reserved.<br>
+                                Sent with care to <span style="color: #7c3aed;">avijitpahari867@gmail.com</span>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
-
 </html>

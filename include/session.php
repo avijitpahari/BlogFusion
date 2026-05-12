@@ -23,7 +23,7 @@ function requireAdmin(){
 function requireAuthor(){
     requireUser(); // first check login
 
-    if ($_SESSION['role'] !== "author") {
+    if ($_SESSION['role'] !== "author" && $_SESSION['role'] !== "admin") {
         header("Location: ../pages/login.php");
         exit;
     }

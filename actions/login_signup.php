@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
             if($data['role']=="user"){
                 header("Location: ../pages/home.php");
             }elseif($data['role']=="author"){
-                //header("Location: ../pages/home.php");
+                header("Location: ../author/index.php");
             }elseif($data['role']=="admin"){
                 header("Location: ../admin/dashboard.php");
             }

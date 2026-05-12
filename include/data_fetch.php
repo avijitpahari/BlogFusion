@@ -22,6 +22,29 @@ function data_featch($conn,$user_id){
     ];
 }
 
+function data($conn,$table_name,$id){
+    $query = "SELECT * FROM $table_name WHERE id = '$id'";
+    $result = mysqli_query($conn, $query);
+
+    if(!$result){
+        die("Query Failed: " . mysqli_error($conn));
+    }
+
+    return mysqli_fetch_assoc($result);
+
+}
+
+function total($conn,$table_name){
+    $query = "SELECT count(*) as total FROM $table_name";
+    $result = mysqli_query($conn, $query);
+
+    if(!$result){
+        die("Query Failed: " . mysqli_error($conn));
+    }
+
+    return mysqli_fetch_assoc($result);
+
+}
 function alldetails($table_name){
     global $conn;
     $sql="SELECT * FROM {$table_name} ORDER BY id ASC";
@@ -38,8 +61,30 @@ function alldetails($table_name){
 
 }
 
-function delete($table_name,$id){
-    $sql="DELETE FROM {$table_name} where id='$id'";
+function check($table_name,$column,$value){
+    global $conn;
+    $sql="SELECT * FROM {$table_name} where {$column}={$value}";
+    $run=mysqli_query($conn,$sql);
+    if($run){
+        if(mysqli_num_rows($run)){
+            echo true;
+        }else{
+            echo false;
+        }
+    }
 }
+
+function delete($table_name,$id){
+    global $conn;
+    $sql="DELETE FROM {$table_name} where id='$id'";
+    $run=mysqli_query($conn,$sql);
+    if ($run) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
 
 ?>
