@@ -1,9 +1,25 @@
 {
   "portfolio": {
-    "name": "Avijit Pahari",
-    "title": "Full Stack Web Developer",
     "bio": "Passionate web developer focused on building modern, responsive, and user-friendly web applications using MERN Stack and PHP.",
-    "image":"upload/profile-images/default.png",
+    "image": "upload/profile-images/default.png",
+    "personal_details": {
+      "full_name": "Avijit Pahari",
+      "nickname": "Avijit",
+      "profession": "Full Stack Web Developer",
+      "date_of_birth": "26-08-2005",
+      "gender": "Male",
+      "nationality": "Indian",
+      "language_known": ["Bengali", "English", "Hindi"],
+      "location": {
+        "city": "contai",
+        "state": "West Bengal",
+        "country": "India"
+      },
+      "contact": {
+        "email": "avijit@example.com",
+        "phone": "+915466464118"
+      }
+    },
     "skills": [
       "HTML",
       "CSS",
@@ -18,40 +34,9 @@
       "Git"
     ],
 
-    "projects": [
-      {
-        "id": 1,
-        "name": "Blog Fusion",
-        "description": "Modern blog platform with authentication, email verification, author dashboard, comments system, and TinyMCE editor.",
-        "technology": [
-          "PHP",
-          "MySQL",
-          "JavaScript",
-          "Tailwind CSS"
-        ],
-        "status": "In Progress"
-      },
-      {
-        "id": 2,
-        "name": "Job Portal System",
-        "description": "Online job portal where users can apply for jobs and recruiters can manage listings.",
-        "technology": [
-          "PHP",
-          "MySQL",
-          "JavaScript"
-        ],
-        "status": "In Progress"
-      }
-    ],
-
     "education": {
       "degree": "Bachelor of Computer Applications",
       "status": "Pursuing"
-    },
-
-    "contact": {
-      "email": "avijitpahari867@gmail.com",
-      "location": "India"
     }
   }
 }
