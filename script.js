@@ -1,5 +1,5 @@
 (async function () {
-    let res = await fetch("https://dummyjson.com/products");
+    let res = await fetch("https://avijitpahari.github.io/BlogFusion/mydetails.json");
     let AllData = await res.json();
     let products = AllData.products;
     console.log(AllData);

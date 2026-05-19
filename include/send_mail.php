@@ -4,6 +4,7 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
+$env = parse_ini_file("../.env");
 
 require '../vendor/PHPMailer/src/Exception.php';
 require '../vendor/PHPMailer/src/PHPMailer.php';
@@ -15,10 +16,10 @@ $mail = new PHPMailer(true);
 //Server settings
 //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
 $mail->isSMTP();                                            //Send using SMTP
-$mail->Host = 'smtp.gmail.com';                     //Set the SMTP server to send through
-$mail->SMTPAuth = true;                                   //Enable SMTP authentication
-$mail->Username = 'avijitpahari867@gmail.com';                     //SMTP username
-$mail->Password = 'punn rces uoza dcar';                               //SMTP password
+$mail->Host = 'smtp.gmail.com';                             //Set the SMTP server to send through
+$mail->SMTPAuth = true;                                    //Enable SMTP authentication
+$mail->Username = $env['EMAIL'];;                           //SMTP username
+$mail->Password = $env['PASSWORD'];                               //SMTP password
 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;            //Enable implicit TLS encryption
 $mail->Port = 587;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
 
