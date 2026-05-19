@@ -1,7 +1,7 @@
 {
   "portfolio": {
     "bio": "Passionate web developer focused on building modern, responsive, and user-friendly web applications using MERN Stack and PHP.",
-    "image": "upload/profile-images/default.png",
+    "image": "https://avijitpahari.github.io/BlogFusion/upload/profile-images/default.png",
     "personal_details": {
       "full_name": "Avijit Pahari",
       "nickname": "Avijit",
