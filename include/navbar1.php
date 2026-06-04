@@ -1,3 +1,4 @@
+<?php include_once __DIR__ . '/functions.php'; ?>
 <!DOCTYPE html>
 
 <html class="light" lang="en">
@@ -29,12 +30,12 @@
         class="sticky top-0 z-50 w-full bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16"> <!-- Left: Logo -->
-                <div class="flex items-center gap-2 flex-shrink-0">
+                <a href="<?php echo site_url('pages/index.php'); ?>" class="flex items-center gap-2 flex-shrink-0">
                     <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white"> <span
                             class="material-symbols-outlined text-2xl">auto_stories</span> </div> <span
                         class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 hidden md:block">
                         Blog<span class="text-primary">Fusion</span> </span>
-                </div> <!-- Center: Search Bar -->
+                </a> <!-- Center: Search Bar -->
                 <div class="flex-1 max-w-md px-8 hidden sm:block">
                     <div class="relative group">
                         <div
@@ -47,11 +48,11 @@
                 </div> <!-- Right: Nav Links & Actions -->
                 <div class="flex items-center gap-2 md:gap-6"> <!-- Navigation Links -->
                     <div class="hidden lg:flex items-center gap-6"> <a
-                            class="text-sm font-medium text-primary border-b-2 border-primary pb-0.5" href="#">Home</a>
+                            class="text-sm font-medium text-primary border-b-2 border-primary pb-0.5" href="<?php echo site_url('pages/index.php'); ?>">Home</a>
                         <a class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
-                            href="#">Explore</a> <a
+                            href="<?php echo site_url('pages/index.php'); ?>#latest">Explore</a> <a
                             class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
-                            href="#">Bookmarks</a>
+                            href="<?php echo site_url('pages/index.php'); ?>#trending">Bookmarks</a>
                     </div>
                     <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden lg:block mx-2"></div>
                     <!-- Create Button -->
@@ -60,13 +61,17 @@
                         <span class="material-symbols-outlined">search</span>
                     </button>
                     <!-- User Profile -->
-                    <a href="pages/login.php"
+                    <a href="<?php echo site_url('pages/login.php'); ?>"
                         class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm shadow-primary/20">Login</a>
                 </div>
             </div>
         </div>
     </nav>
-
+    <?php
+    if (function_exists('inject_project_toast')) {
+        inject_project_toast();
+    }
+    ?>
 </body>
 
 </html>

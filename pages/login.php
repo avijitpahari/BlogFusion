@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<?php include_once "../include/functions.php"; ?><!DOCTYPE html>
 
 <html class="light" lang="en">
 
@@ -47,43 +47,7 @@
         <div class="layout-container flex h-full grow flex-col">
             <main class="flex-1 flex items-center justify-center p-4 md:p-8">
 
-                <?php if (isset($_GET['msg']) ) { ?>
-
-                    <div id="alertBox" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-                        <div
-                            class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl shadow-lg">
-                            <span class="material-symbols-outlined text-green-500">check_circle</span>
-                            <p class="text-sm font-semibold">
-                                <?php
-                                    switch($_GET['msg']){
-                                         case "registered":
-                                            echo'Registration Successful';
-                                            break;
-                                        case "p_not_match":
-                                            echo'Password not match. Please enter again';
-                                            break;
-                                        case "u_not_find":
-                                            echo'Email not match. Please enter again';
-                                            break;
-                                    }
-                                ?>
-                            </p>
-                        </div>
-                    </div>
-
-                    <script>
-                        setTimeout(() => {
-                            document.getElementById("alertBox")?.remove();
-                        }, 2000);
-                        if (window.history.replaceState) {
-                            const url = new URL(window.location);
-                            url.searchParams.delete("msg"); // remove msg parameter
-                            window.history.replaceState({}, document.title, url.pathname);
-                        }
-                    </script>
-                    
-
-                <?php } ?>
+                <?php inject_project_toast(); ?>
 
                 <div
                     class="layout-content-container flex flex-col w-full max-w-[480px] bg-white dark:bg-slate-900 rounded-xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
@@ -123,7 +87,7 @@
                                 <label
                                     class="text-slate-700 dark:text-slate-300 text-sm font-semibold leading-normal">Password</label>
                                 <a class="text-xs font-medium text-primary hover:text-secondary transition-colors"
-                                    href="#">Forgot password?</a>
+                                    href="forgot-password.php">Forgot password?</a>
                             </div>
                             <div class="relative group" id="password-container">
                                 <span

@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     // ===========================
     if ($action === "check_email") {
 
-        $email = $_POST['email'];
+        $email = mysqli_real_escape_string($conn, $_POST['email']);
 
         $query = "SELECT * FROM users WHERE email='$email' LIMIT 1";
         $result = mysqli_query($conn, $query);

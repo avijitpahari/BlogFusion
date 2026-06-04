@@ -43,7 +43,7 @@ blog-website/
 │   ├── delete_post.php
 │   └── comment_action.php
 │
-├── uploads/
+├── upload/
 │   ├── post-images/
 │   └── profile-images/
 │

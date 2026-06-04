@@ -1,7 +1,86 @@
 <?php include "../include/session.php"; 
 requireAdmin();
 include "../include/db.php";
+include "../include/functions.php";
 include "../include/admin_nav_sidebar.php";
+include "../include/pagination.php";
+
+$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, trim($_GET['search'])) : '';
+
+// CSV Export logic
+if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    if (ob_get_level()) {
+        ob_end_clean();
+    }
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=comments_' . date('Y-m-d') . '.csv');
+    $output = fopen('php://output', 'w');
+    fputcsv($output, ['ID', 'User Name', 'Post Title', 'Comment', 'Likes', 'Date']);
+    
+    $where_clause = "";
+    if (!empty($search)) {
+        $where_clause = "WHERE c.comment LIKE '%$search%' OR u.name LIKE '%$search%' OR p.title LIKE '%$search%'";
+    }
+    
+    $export_query = "SELECT c.id, u.name as user_name, p.title as post_title, c.comment, c.like as likes, c.created_at 
+                     FROM comments c 
+                     LEFT JOIN users u ON c.user_id = u.id 
+                     LEFT JOIN posts p ON c.post_id = p.id 
+                     $where_clause 
+                     ORDER BY c.id DESC";
+    $export_result = mysqli_query($conn, $export_query);
+    if ($export_result) {
+        while ($row = mysqli_fetch_assoc($export_result)) {
+            fputcsv($output, [
+                $row['id'],
+                $row['user_name'],
+                $row['post_title'],
+                $row['comment'],
+                $row['likes'],
+                $row['created_at']
+            ]);
+        }
+    }
+    fclose($output);
+    exit();
+}
+
+$limit = 6;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
+
+// Search support
+$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, trim($_GET['search'])) : '';
+$search_clause = $search ? "WHERE c.comment LIKE '%$search%' OR u.name LIKE '%$search%' OR p.title LIKE '%$search%'" : '';
+
+// Count total
+$total_query = "SELECT COUNT(*) as total FROM comments c 
+                LEFT JOIN users u ON c.user_id = u.id 
+                LEFT JOIN posts p ON c.post_id = p.id 
+                $search_clause";
+$total_result = mysqli_query($conn, $total_query);
+$total_row = mysqli_fetch_assoc($total_result);
+$total_records = $total_row['total'] ?? 0;
+
+// Main query
+$query = "SELECT c.*, u.name AS user_name, u.email AS user_email, u.profile_image AS user_avatar, p.title AS post_title, p.slug AS post_slug
+          FROM comments c
+          LEFT JOIN users u ON c.user_id = u.id
+          LEFT JOIN posts p ON c.post_id = p.id
+          $search_clause
+          ORDER BY c.created_at DESC
+          LIMIT $limit OFFSET $offset";
+$result = mysqli_query($conn, $query);
+$comments_data = $result && mysqli_num_rows($result) ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
+
+$pagination = paginate($comments_data, $total_records, $page, $offset, $limit);
+$comments = $pagination['data'];
+$total_pages = $pagination['total_pages'];
+$page = $pagination['current_page'];
+$limit = $pagination['limit'];
+$total_records = $pagination['total_records'];
+$offset = $pagination['offset'];
 ?>
 <!DOCTYPE html>
 
@@ -58,22 +137,29 @@ include "../include/admin_nav_sidebar.php";
             <?=ad_navbar();?>
             <!-- Page Content -->
             <div class="flex-1 overflow-y-auto p-8">
-                <div class="flex items-center justify-between mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
                         <h2 class="text-3xl font-black tracking-tight">Comments</h2>
                         <p class="text-slate-500">Manage and moderate user comments across all blog posts</p>
                     </div>
                     <div class="flex items-center gap-3">
-                        <button
-                            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
-                            <span class="material-symbols-outlined text-[20px]">filter_list</span>
-                            Filter
-                        </button>
-                        <button
+                        <!-- Search Form -->
+                        <form method="GET" action="" class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                            <input name="search" value="<?= htmlspecialchars($search) ?>"
+                                class="pl-10 pr-8 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary text-sm focus:border-primary"
+                                placeholder="Search comments..." type="text" />
+                            <?php if ($search): ?>
+                            <a href="?" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500">
+                                <span class="material-symbols-outlined text-lg">close</span>
+                            </a>
+                            <?php endif; ?>
+                        </form>
+                        <a href="?export=csv&search=<?= urlencode($search) ?>"
                             class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
                             <span class="material-symbols-outlined text-[20px]">download</span>
                             Export CSV
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <!-- Comments Table Card -->
@@ -92,34 +178,54 @@ include "../include/admin_nav_sidebar.php";
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                                <!-- Row 1 -->
+                                <?php if (empty($comments)): ?>
+                                <tr>
+                                    <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400 font-medium">
+                                        <span class="material-symbols-outlined text-4xl mb-2 opacity-50 block">forum</span>
+                                        No comments found.
+                                    </td>
+                                </tr>
+                                <?php else: foreach ($comments as $row):
+                                    $avatar_url = $row['user_avatar'] ? $row['user_avatar'] : 'upload/profile-images/default.png';
+                                    if (strpos($avatar_url, 'http') !== 0 && strpos($avatar_url, '../') !== 0) {
+                                        $avatar_url = '../' . $avatar_url;
+                                    }
+                                ?>
                                 <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
                                             <img class="h-9 w-9 rounded-full object-cover border-2 border-slate-100 dark:border-slate-800"
-                                                data-alt="User avatar of Sarah Jenkins"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeeYkzoFM9c3cMFc7AUbaMTaXNSPkLBAeWmqT3sVYUJkj5KsyUm3g8DLqc9nrwmjjFwHJu5PlM6aEETe9HqwOIaNuCsxGI-1DMJIjC5QeG8LjdJaO1d5c6Swewx45-9_on0axlvfs_v9r6x_qvuOziVq5xgoO8oJnFXoQ3dLW4P_Bd7JXysKqgUllF9BU_ffwgy83h-NzNlXLb2BpymoHN0OmzetEPfIHUndBvdRZAd7Kw8GtoLJtWDK0LbUDs8IXcp6_Bi88Y3kk" />
-                                            <span class="text-sm font-semibold">Sarah Jenkins</span>
+                                                src="<?= htmlspecialchars($avatar_url) ?>"
+                                                alt="User avatar of <?= htmlspecialchars($row['user_name'] ?? 'User') ?>"
+                                                onerror="this.src='https://placehold.co/36x36/eaddff/7c3aed?text=U'" />
+                                            <div class="flex flex-col">
+                                                <span class="text-sm font-semibold"><?= htmlspecialchars($row['user_name'] ?? 'Guest User') ?></span>
+                                                <span class="text-[10px] text-slate-400"><?= htmlspecialchars($row['user_email'] ?? '') ?></span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <a class="text-sm font-medium text-primary hover:underline line-clamp-1"
-                                            href="#">10 Tips for UI Design Mastery</a>
+                                            href="../redirect-post.php?id=<?= $row['post_id'] ?>" target="_blank">
+                                            <?= htmlspecialchars($row['post_title'] ?? 'Deleted Post') ?>
+                                        </a>
                                     </td>
                                     <td class="px-6 py-4">
                                         <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 max-w-md">
-                                            "This is exactly what I needed! The section on color theory and
-                                            accessibility is particularly insightful. Thanks for sharing!"</p>
+                                            "<?= htmlspecialchars($row['comment']) ?>"
+                                        </p>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">Oct 12, 2023</td>
+                                    <td class="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
+                                        <?= date("M d, Y", strtotime($row['created_at'])) ?>
+                                    </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            <button
+                                            <button onclick="approveComment(<?= $row['id'] ?>)"
                                                 class="p-2 text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
                                                 title="Approve">
                                                 <span class="material-symbols-outlined text-[20px]">check_circle</span>
                                             </button>
-                                            <button
+                                            <button onclick="deleteComment(<?= $row['id'] ?>)"
                                                 class="p-2 text-rose-600 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors"
                                                 title="Delete">
                                                 <span class="material-symbols-outlined text-[20px]">delete</span>
@@ -127,144 +233,29 @@ include "../include/admin_nav_sidebar.php";
                                         </div>
                                     </td>
                                 </tr>
-                                <!-- Row 2 -->
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <img class="h-9 w-9 rounded-full object-cover border-2 border-slate-100 dark:border-slate-800"
-                                                data-alt="User avatar of Marcus Thorne"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0W-l2cX7WZqE2S9OnRkEVautG7TyReOgH0Swj7_KxzIwUoVF6OSksz9VJkbI0Q_sWNhaaglR-78gMK_fSNqZICQOnMeCZdApdknSk_6ogIUAOd3v-TIx74BDicTK27UdsTdkGMQzqy5jA0b2iSjEDB3_JdhNl_NTJZUAWKuNLVCHQvInpJHlb3PwojOdYOehEutCP3fBQsndy-Mrxr4uds_M3nz3WVEyNxADbAbw52vOB7gS-CCouTmuxhaH3CJvHtyiFvlWLkYQ" />
-                                            <span class="text-sm font-semibold">Marcus Thorne</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <a class="text-sm font-medium text-primary hover:underline line-clamp-1"
-                                            href="#">React vs Vue in 2024: A Comparison</a>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 max-w-md">
-                                            "I've been using Vue for 3 years, but your points about the React ecosystem
-                                            are hard to ignore. Might be time to switch."</p>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">Oct 11, 2023</td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <button
-                                                class="p-2 text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
-                                                title="Approve">
-                                                <span class="material-symbols-outlined text-[20px]">check_circle</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-rose-600 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors"
-                                                title="Delete">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <!-- Row 3 -->
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <img class="h-9 w-9 rounded-full object-cover border-2 border-slate-100 dark:border-slate-800"
-                                                data-alt="User avatar of Leo David"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6UxyX9D0QluFOIb-2RVm86hoQl_9Ak9A6-gb3O1bIf6oKL3CoCAg9YVnOXQR2tA04tQ6AiT_LmCQz8TQdKkPK88u5tfZhmg9MSPtFcF8VnzCPNdngyO98g472jpIZuZtl3aJpkp0tGiLX2LTY3dEoKTxzQCvVxmcf_UaAb-cVgaryhmf903tX7vOj_E1D2uYclL1QLG6IlKMv69Yh_BgXA6rM9LR-rOPmbFVJcAHUTqrdxD3yJzU91l0ssJw_szL5c--9z0Tej3A" />
-                                            <span class="text-sm font-semibold">Leo David</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <a class="text-sm font-medium text-primary hover:underline line-clamp-1"
-                                            href="#">Mastering CSS Grid Layouts</a>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 max-w-md">
-                                            "Could you elaborate on how to handle legacy browsers with these grid
-                                            properties?"</p>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">Oct 10, 2023</td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <button
-                                                class="p-2 text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
-                                                title="Approve">
-                                                <span class="material-symbols-outlined text-[20px]">check_circle</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-rose-600 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors"
-                                                title="Delete">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <!-- Row 4 -->
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <img class="h-9 w-9 rounded-full object-cover border-2 border-slate-100 dark:border-slate-800"
-                                                data-alt="User avatar of Emily Watson"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrwGjCte6kI7iAdc6y-RTaamVj_QyFq8wsp48x5mPmg2y67xKv6qrG89bya5zRnpKgwEPv_QekAsljwUNA3VCfkAnd99Uhdq_epZO68B1RC7WIfQNwTSrfcTKCdxpkqru4JHUAzPzut0QoxKsoSa6Qz9RPBiTV6HmsP9oDluO3CHP8c-Wp5JV41MWp1-0SRXjI6seDohCSTLSTG_VXs8pV8CC0d7dWc4fum84eXrjHJHnJLETupQiyXhuZbu3mpx6zv4UAFPg-mv8" />
-                                            <span class="text-sm font-semibold">Emily Watson</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <a class="text-sm font-medium text-primary hover:underline line-clamp-1"
-                                            href="#">The Future of AI in Content Creation</a>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 max-w-md">
-                                            "Excellent read. I think we need to be careful about the ethical
-                                            implications mentioned in the fourth paragraph."</p>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">Oct 09, 2023</td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <button
-                                                class="p-2 text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
-                                                title="Approve">
-                                                <span class="material-symbols-outlined text-[20px]">check_circle</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-rose-600 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors"
-                                                title="Delete">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <?php endforeach; endif; ?>
                             </tbody>
                         </table>
                     </div>
                     <!-- Pagination -->
-                    <div
-                        class="px-6 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 flex items-center justify-between">
-                        <p class="text-sm text-slate-500">Showing <span
-                                class="font-bold text-slate-900 dark:text-white">1</span> to <span
-                                class="font-bold text-slate-900 dark:text-white">4</span> of <span
-                                class="font-bold text-slate-900 dark:text-white">48</span> comments</p>
-                        <div class="flex items-center gap-2">
-                            <button
-                                class="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
-                                disabled="">
-                                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                            </button>
-                            <button
-                                class="h-9 w-9 flex items-center justify-center bg-primary text-white rounded-lg font-bold text-sm shadow-sm">1</button>
-                            <button
-                                class="h-9 w-9 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition-colors">2</button>
-                            <button
-                                class="h-9 w-9 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition-colors">3</button>
-                            <button
-                                class="p-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                            </button>
-                        </div>
-                    </div>
+                    <?php pagination_links($total_pages, $limit, $total_records, $offset, 'comments'); ?>
                 </div>
             </div>
         </main>
     </div>
+
     <script src="../assets/js/admin.js"></script>
+    <script>
+        function deleteComment(id) {
+            if (confirm("Are you sure you want to delete this comment? This will permanently delete the comment and all its replies.")) {
+                window.location.href = "../actions/admin.php?btn=comment&id=" + id;
+            }
+        }
+
+        function approveComment(id) {
+            showToast("Comment approved successfully!", "success");
+        }
+    </script>
 </body>
 
 </html>

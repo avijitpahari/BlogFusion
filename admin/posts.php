@@ -1,7 +1,66 @@
 <?php include "../include/session.php"; 
 requireAdmin();
 include "../include/db.php";
+include "../include/functions.php";
 include "../include/admin_nav_sidebar.php";
+include "../include/pagination.php";
+
+$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, trim($_GET['search'])) : '';
+$category_id = isset($_GET['category']) ? (int)$_GET['category'] : 0;
+$status = isset($_GET['status']) ? mysqli_real_escape_string($conn, trim($_GET['status'])) : '';
+
+$limit = 6;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
+
+// Construct SQL query
+$where = [];
+if (!empty($search)) {
+    $where[] = "(posts.title LIKE '%$search%' OR posts.description LIKE '%$search%' OR posts.content LIKE '%$search%')";
+}
+if ($category_id > 0) {
+    $where[] = "posts.category_id = $category_id";
+}
+if (!empty($status) && $status !== 'All Status') {
+    $where[] = "posts.status = '$status'";
+}
+
+$where_clause = "";
+if (count($where) > 0) {
+    $where_clause = "WHERE " . implode(" AND ", $where);
+}
+
+// Fetch posts
+$query = "SELECT posts.*, categories.name as category_name, users.name as author_name, users.profile_image as author_image 
+          FROM posts 
+          LEFT JOIN categories ON posts.category_id = categories.id 
+          LEFT JOIN users ON posts.author_id = users.id 
+          $where_clause 
+          ORDER BY posts.id DESC 
+          LIMIT $limit OFFSET $offset";
+$result = mysqli_query($conn, $query);
+$posts = $result ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
+
+// Total count
+$total_query = "SELECT COUNT(*) as total FROM posts $where_clause";
+$total_result = mysqli_query($conn, $total_query);
+$total_records = 0;
+if ($total_result) {
+    $total_row = mysqli_fetch_assoc($total_result);
+    $total_records = (int)$total_row['total'];
+}
+
+// Paginate
+$pagination = paginate($posts, $total_records, $page, $offset, $limit);
+$posts_paginated = $pagination['data'];
+$total_pages = $pagination['total_pages'];
+$page = $pagination['current_page'];
+
+// Fetch categories for dropdown
+$cat_query = "SELECT * FROM categories ORDER BY name ASC";
+$cat_result = mysqli_query($conn, $cat_query);
+$categories = $cat_result ? mysqli_fetch_all($cat_result, MYSQLI_ASSOC) : [];
 ?>
 <!DOCTYPE html>
 
@@ -48,6 +107,28 @@ include "../include/admin_nav_sidebar.php";
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+
+    <!-- ── Delete Confirmation Modal ── -->
+    <div id="deleteModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center border border-slate-200 dark:border-slate-800">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
+                <span class="material-symbols-outlined text-3xl text-red-600">delete_forever</span>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 dark:text-white mb-2">Delete Post?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-8">This action cannot be undone. The post will be permanently removed.</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()"
+                    class="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold transition-colors text-sm">
+                    Cancel
+                </button>
+                <button id="deleteConfirmBtn" onclick="executeDelete()"
+                    class="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors text-sm flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-base">delete</span> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="flex h-screen overflow-hidden">
         <!-- SideNavBar -->
         <?=slidebar('posts');?>
@@ -59,60 +140,66 @@ include "../include/admin_nav_sidebar.php";
             <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto p-8">
                 <!-- Page Header -->
-                <div class="flex items-center justify-between mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <div>
                         <h2 class="text-3xl font-black tracking-tight">Posts</h2>
                         <p class="text-slate-500">Manage and organize your blog content</p>
                     </div>
-                    <button
-                        class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all">
+                    <a href="edit-post.php"
+                        class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all sm:self-center self-start">
                         <span class="material-symbols-outlined text-[20px]">add</span>
                         Add Post
-                    </button>
+                    </a>
                 </div>
                 <!-- Filters -->
-                <div
-                    class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 mb-8">
+                <form method="GET" action="posts.php" class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 mb-8">
                     <div class="flex flex-wrap items-center gap-6">
+                        <!-- Search Box -->
                         <div class="flex-1 min-w-[200px]">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Filter
-                                by Category</label>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Search Posts</label>
+                            <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search title, content..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-primary focus:border-primary outline-none text-slate-900 dark:text-slate-100">
+                        </div>
+                        
+                        <!-- Category Filter -->
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Filter by Category</label>
                             <div class="relative">
-                                <select
-                                    class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-primary focus:border-primary">
-                                    <option>All Categories</option>
-                                    <option>Technology</option>
-                                    <option>Programming</option>
-                                    <option>Business</option>
-                                    <option>Design</option>
+                                <select name="category" onchange="this.form.submit()"
+                                    class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-primary focus:border-primary text-slate-900 dark:text-slate-100">
+                                    <option value="0">All Categories</option>
+                                    <?php foreach ($categories as $cat): ?>
+                                        <option value="<?= $cat['id'] ?>" <?= ($category_id == $cat['id']) ? 'selected' : '' ?>><?= htmlspecialchars($cat['name']) ?></option>
+                                    <?php endforeach; ?>
                                 </select>
-                                <span
-                                    class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</span>
+                                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</span>
                             </div>
                         </div>
+                        
+                        <!-- Status Filter -->
                         <div class="flex-1 min-w-[200px]">
-                            <label
-                                class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Status</label>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Status</label>
                             <div class="relative">
-                                <select
-                                    class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-primary focus:border-primary">
-                                    <option>All Status</option>
-                                    <option>Published</option>
-                                    <option>Draft</option>
-                                    <option>Scheduled</option>
+                                <select name="status" onchange="this.form.submit()"
+                                    class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:ring-primary focus:border-primary text-slate-900 dark:text-slate-100">
+                                    <option value="">All Status</option>
+                                    <option value="published" <?= ($status == 'published') ? 'selected' : '' ?>>Published</option>
+                                    <option value="draft" <?= ($status == 'draft') ? 'selected' : '' ?>>Draft</option>
                                 </select>
-                                <span
-                                    class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</span>
+                                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</span>
                             </div>
                         </div>
+                        
+                        <!-- Actions -->
                         <div class="flex gap-2 self-end">
-                            <button
-                                class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm">
-                                Reset Filters
+                            <button type="submit" class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md shadow-primary/10 text-sm">
+                                Apply
                             </button>
+                            <a href="posts.php" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-xl font-bold transition-colors text-sm flex items-center justify-center">
+                                Reset
+                            </a>
                         </div>
                     </div>
-                </div>
+                </form>
                 <!-- Posts Table -->
                 <div
                     class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -121,228 +208,144 @@ include "../include/admin_nav_sidebar.php";
                             <thead>
                                 <tr
                                     class="text-slate-500 text-xs uppercase tracking-wider bg-slate-50/50 dark:bg-slate-800/50">
-                                    <th class="px-6 py-4 font-semibold w-24">Image</th>
+                                    <th class="px-6 py-4 font-semibold w-24 hidden sm:table-cell">Image</th>
                                     <th class="px-6 py-4 font-semibold">Title</th>
-                                    <th class="px-6 py-4 font-semibold">Category</th>
-                                    <th class="px-6 py-4 font-semibold">Author</th>
+                                    <th class="px-6 py-4 font-semibold hidden md:table-cell">Category</th>
+                                    <th class="px-6 py-4 font-semibold hidden lg:table-cell">Author</th>
                                     <th class="px-6 py-4 font-semibold text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                                <!-- Row 1 -->
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div
-                                            class="w-14 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                            <img alt="Post thumbnail" class="w-full h-full object-cover"
-                                                data-alt="Close up of high tech computer motherboard with green lights"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDA8UlO_Fc3YRAJOFkJ17ORU97Myic_lj6ErGPnQlxtECsMTCJwbF6ydJ-42KObyWmhNnDidJYEt1bxLuQqj_pMYNKILU0ltY9zjvm6wOpUaJ6lOGI1PPlrkEVIXq-0QzDb8-061w2DVSikgDcOrZ9Ca1g3FNLJ2HNkZJcYDNRmOC3oThn85IjLvGubzbkGMCsRddQo8NYGhDx0mxRSrunwBuhcZ1sRsDkbiEXQu9WPWr6S1Iu8SrYtzZ76HeD5JYJFsbuPOsGzAjw" />
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="font-bold text-sm line-clamp-1">Future of AI in Cybersecurity</p>
-                                        <p class="text-xs text-slate-500 mt-1">Updated 2 hours ago</p>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-primary/10 text-primary uppercase">Technology</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <img alt="Author" class="w-6 h-6 rounded-full"
-                                                data-alt="Profile icon of a creative female blogger"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM9b5EYYel2ThAKkShWf8_mczQgf0SE3TrTK_j28Ftvoy1lSHok0yekJUu1zGIJ3Er1H0o96XBxM1kxs7fdJ72WlufSX6FjDn0JgOwXEnRV1a_J2MqdXEsWag6XRyXmYdueQuen-py4b92qMObc1YUe0BJQ5DVXGFaxj6l3mFAQkozL3NGlfyYwgAgEYhYMgiQ6-eti9l50pfwW4KD16I4K_uDRXQx-4env9xCdEgWXO4Q1QznuySKTWomm13BDfdNAqRdiwHBJ8Y" />
-                                            <span class="text-sm font-medium">Sarah Jenkins</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end gap-2">
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-indigo-accent hover:bg-indigo-600/10 rounded-lg transition-colors"
-                                                title="View">
-                                                <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                                title="Edit">
-                                                <span class="material-symbols-outlined text-[20px]">edit</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                                title="Delete">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <!-- Row 2 -->
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div
-                                            class="w-14 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                            <img alt="Post thumbnail" class="w-full h-full object-cover"
-                                                data-alt="Person hands typing on a laptop with code on the screen"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCdRniaShgB9zHH_1za7oHV4btgbjziGYdj-HLIrZpkCG5nFRQY3h45i9eC5VIq0GDS1e1a7HR_hYuQ-JlVbMHK8dz2cMxPvTjVMA_8DczZS_QUNY3bzZ7azMHE-wGtfRwmG5aon-AafO3dB9Catk1O6mliRYI0MIejBh8NT8AST7TEyAMkylSYtlnIO1szhAj2Z6YhR-zr-QyCojz_L2hyDLcDZzWZI0bGOc69ubwcBSQK1nDs19tgxE8YXaYI-4dv2AxQuree4A" />
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="font-bold text-sm line-clamp-1">Mastering Rust in 30 Days</p>
-                                        <p class="text-xs text-slate-500 mt-1">Published Oct 24, 2023</p>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 uppercase">Programming</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <img alt="Author" class="w-6 h-6 rounded-full"
-                                                data-alt="Profile icon of a male software developer"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVE3C960ZXy7cA1O_rw-3fwHNvLkb6YXWNTzs8pSbY6YuVAams6JKzzm4-XpRYn0mdk_D2k9OneuYL5UrueKbhzz8ajwd9WIBBpxp2H6TDuaPITqowTkTFusjRhIWr7rYgwYeT9ate5uVPNVHTNk2pjd_XYUn9Az6y1lSfUOBeDqPOa5bgp-lyFizLrfblikAiOwY0yOMmoTajU5aUmyNrOxrECcIA2SMtOSPhV_R9GYKEY7mBTp4frhxP6vNmjnK0UjOE061YBiA" />
-                                            <span class="text-sm font-medium">David Chen</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end gap-2">
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-indigo-accent hover:bg-indigo-600/10 rounded-lg transition-colors"
-                                                title="View">
-                                                <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                                title="Edit">
-                                                <span class="material-symbols-outlined text-[20px]">edit</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                                title="Delete">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <!-- Row 3 -->
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div
-                                            class="w-14 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                            <img alt="Post thumbnail" class="w-full h-full object-cover"
-                                                data-alt="Stock market charts and data on a monitor"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKZ_056oO7MyARJepxzipdHtxKIxlzaun6Kb8bw4YAetyDf0xXo6npJO1XUpcqsPN1NVI6o9jIkVYLxkRyzkAzKcCpc_8d1sBe6ObpKYbMIzXnBjstLnOfvOnFmQr3Rkxq_ea6bn1Eq9E0g5zt68QkXBAW7WcjWtG50yp0q8V5YCHPIjIXIzwpL5IK5g4WmSr2mxOsb3d-dN-Y5MQMCjAuLvn72i_wYtFD8ukV6f6JsTTDGd7x1XBjgfGe9dpojQEZc5rBAk79gXE" />
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="font-bold text-sm line-clamp-1">Startup Funding Trends 2024</p>
-                                        <p class="text-xs text-slate-500 mt-1">Updated 1 day ago</p>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-green-100 text-green-700 uppercase">Business</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <img alt="Author" class="w-6 h-6 rounded-full"
-                                                data-alt="Profile icon of a male business executive"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8BHp9sOmbRJiALtAzAqgHfo0DC1DDk_bT_53FFCU9qP4PTGmpF8l2ZkNl-zWcycntcUGqI6k2y7u36Kga42baJCz92PmsIDds5z4kWgu_6DQnKOtmTc5DazSe_ewE83taPxg55wO06UFvvrMqQAZA-xANew-Z6j9LCpC_o_wyxePQ0Nr9OCqfIh0TXb1bw3vtcx735UN2yZetvrec5RqKawcWl_wVniOHw-zcPyftyRR4szwNOAKi_rrRBH7Otdw8oSgt_nR_aKY" />
-                                            <span class="text-sm font-medium">Michael Ross</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end gap-2">
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-indigo-accent hover:bg-indigo-600/10 rounded-lg transition-colors"
-                                                title="View">
-                                                <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                                title="Edit">
-                                                <span class="material-symbols-outlined text-[20px]">edit</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                                title="Delete">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <!-- Row 4 -->
-                                <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-6 py-4">
-                                        <div
-                                            class="w-14 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                            <img alt="Post thumbnail" class="w-full h-full object-cover"
-                                                data-alt="Minimalist graphic design layout on a computer screen"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAg7JJPTV8QIosmwsKdIxUYWEeMuLgNFqVuIX4pXoANlA72Q4Pmlm93J8E0xa1Hoh9bAvGBo_09ES6Tahk07516Uhr_PcK0u05wgD-ax3e3edO-YTiHOAyoOx_TReWmAxvBOT8A3-9TP0qgrf1jIK82DQIW9UpoCJRXwoUWuJF-d-2E52PieSC956NCyM0OXVKRSDAQWCD5ViFgUka_PAmOgrVoKyboqFnFlC7Pn01TTBxInjpzJRXSodVMNifTOBhR87OO5PvLmW0" />
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="font-bold text-sm line-clamp-1">Minimalism in Web Design</p>
-                                        <p class="text-xs text-slate-500 mt-1">Draft</p>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span
-                                            class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 uppercase">Design</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <img alt="Author" class="w-6 h-6 rounded-full"
-                                                data-alt="Profile icon of a female UI/UX designer"
-                                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9n6bMCTJO4YbLJEb3G40NmjQBPhD-14-jlIeHLVYHaCcTuB-oI1yN5D2rsli4lw1gwj6dGvtKa0jTg6nbaI8Mbx2B8itpIfFDCyEHSqArzSdqYfWbuIZBxP2la93sSlMhhrxt1dDGZvnCL_zWP0pxHiDo3GcAeD6owWuAim-PXltROJ4QVYgRKVFzV4xdsEZfxCKzM6L4ORTqtWIVguiBHMfPsLfWqt8Dt_JDHzLptH8R02p_g0GkXILXk6Q_8jXxLQ9BEFZT1WM" />
-                                            <span class="text-sm font-medium">Elena Gray</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex justify-end gap-2">
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-indigo-accent hover:bg-indigo-600/10 rounded-lg transition-colors"
-                                                title="View">
-                                                <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                                title="Edit">
-                                                <span class="material-symbols-outlined text-[20px]">edit</span>
-                                            </button>
-                                            <button
-                                                class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                                title="Delete">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <?php if (empty($posts_paginated)): ?>
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-8 text-center text-slate-500">
+                                            No posts found matching the criteria.
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($posts_paginated as $row): ?>
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <td class="px-6 py-4 hidden sm:table-cell">
+                                                <div class="w-14 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                                    <?php if ($row['image']): ?>
+                                                        <img alt="Post thumbnail" class="w-full h-full object-cover" src="../<?= htmlspecialchars($row['image']) ?>" onerror="this.src='https://placehold.co/56x40/e8dfee/630ed4?text=P'" />
+                                                    <?php else: ?>
+                                                        <div class="w-full h-full bg-primary/10 flex items-center justify-center">
+                                                            <span class="material-symbols-outlined text-primary text-sm">article</span>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <p class="font-bold text-sm line-clamp-1"><?= htmlspecialchars($row['title']) ?></p>
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <p class="text-xs text-slate-500">Updated <?= date("M d, Y", strtotime($row['created_at'])) ?></p>
+                                                    <span class="inline-flex px-1.5 py-0.5 text-[9px] font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase"><?= htmlspecialchars($row['status']) ?></span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 hidden md:table-cell">
+                                                <span class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full bg-primary/10 text-primary uppercase"><?= htmlspecialchars($row['category_name'] ?? 'Uncategorized') ?></span>
+                                            </td>
+                                            <td class="px-6 py-4 hidden lg:table-cell">
+                                                <div class="flex items-center gap-2">
+                                                    <img alt="Author" class="w-6 h-6 rounded-full object-cover" src="../<?= htmlspecialchars($row['author_image'] ?: 'upload/profile-images/default.png') ?>" onerror="this.src='../upload/profile-images/default.png'" />
+                                                    <span class="text-sm font-medium"><?= htmlspecialchars($row['author_name'] ?? 'Admin') ?></span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-right">
+                                                <div class="flex justify-end gap-2">
+                                                    <a href="<?= site_url("redirect-post.php?id=" . $row['id']) ?>" target="_blank"
+                                                        class="p-2 text-slate-400 hover:text-indigo-accent hover:bg-indigo-600/10 rounded-lg transition-colors"
+                                                        title="View">
+                                                        <span class="material-symbols-outlined text-[20px]">visibility</span>
+                                                    </a>
+                                                    <a href="edit-post.php?id=<?= $row['id'] ?>"
+                                                        class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                                                        title="Edit">
+                                                        <span class="material-symbols-outlined text-[20px]">edit</span>
+                                                    </a>
+                                                    <button onclick="deletePost(<?= $row['id'] ?>)"
+                                                        class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                        title="Delete">
+                                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
                     <!-- Pagination -->
-                    <div class="px-6 py-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-                        <p class="text-xs text-slate-500">Showing 1 to 4 of 48 entries</p>
-                        <div class="flex gap-1">
-                            <button
-                                class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 transition-colors">
-                                <span class="material-symbols-outlined text-sm">chevron_left</span>
-                            </button>
-                            <button class="px-3 py-1 rounded-lg bg-primary text-white text-xs font-bold">1</button>
-                            <button
-                                class="px-3 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-xs font-medium">2</button>
-                            <button
-                                class="px-3 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-xs font-medium">3</button>
-                            <span class="px-2 py-1 text-slate-400 text-xs">...</span>
-                            <button
-                                class="px-3 py-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-xs font-medium">12</button>
-                            <button
-                                class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 transition-colors">
-                                <span class="material-symbols-outlined text-sm">chevron_right</span>
-                            </button>
-                        </div>
-                    </div>
+                    <?php pagination_links($total_pages, $limit, $total_records, $offset, 'posts'); ?>
                 </div>
             </div>
         </main>
     </div>
     <script src="../assets/js/admin.js"></script>
+    <script>
+        let pendingDeleteId = null;
+
+        function deletePost(id) {
+            pendingDeleteId = id;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            pendingDeleteId = null;
+        }
+
+        function executeDelete() {
+            if (!pendingDeleteId) return;
+            const id = pendingDeleteId;
+            closeDeleteModal();
+
+            fetch(`../actions/admin.php?btn=post&id=${id}&ajax=1`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        if (typeof showToast === 'function') {
+                            showToast(data.message || 'Post deleted successfully.', 'success');
+                        } else {
+                            alert(data.message || 'Post deleted successfully.');
+                        }
+                        // Find the table row and remove it with an animation
+                        const deleteBtn = document.querySelector(`button[onclick="deletePost(${id})"]`);
+                        const row = deleteBtn ? deleteBtn.closest('tr') : null;
+                        if (row) {
+                            row.style.transition = 'all 0.5s ease';
+                            row.style.opacity = '0';
+                            row.style.transform = 'translateX(-20px)';
+                            setTimeout(() => {
+                                row.remove();
+                                // If table is empty, reload page to show empty state
+                                const tableBody = document.querySelector('tbody');
+                                if (tableBody && tableBody.children.length === 0) {
+                                    window.location.reload();
+                                }
+                            }, 500);
+                        } else {
+                            setTimeout(() => window.location.reload(), 1000);
+                        }
+                    } else {
+                        if (typeof showToast === 'function') {
+                            showToast(data.message || 'Failed to delete post.', 'error');
+                        } else {
+                            alert(data.message || 'Failed to delete post.');
+                        }
+                    }
+                })
+                .catch(() => {
+                    if (typeof showToast === 'function') {
+                        showToast('Network error occurred.', 'error');
+                    } else {
+                        alert('Network error occurred.');
+                    }
+                });
+        }
+    </script>
 </body>
 
 </html>

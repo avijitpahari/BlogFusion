@@ -118,6 +118,20 @@ function slidebar($active)
                 <span>Comments</span>
             </a>
 
+            <!-- Reactions -->
+            <a href="reactions.php"
+                class="<?= ($active == 'reactions') ? 'flex items-center gap-3 px-4 py-3 text-primary font-semibold sidebar-active rounded-lg transition-all' : 'flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all' ?>">
+                <span class="material-symbols-outlined">favorite</span>
+                <span>Reactions</span>
+            </a>
+
+            <!-- Analytics -->
+            <a href="analytics.php"
+                class="<?= ($active == 'analytics') ? 'flex items-center gap-3 px-4 py-3 text-primary font-semibold sidebar-active rounded-lg transition-all' : 'flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all' ?>">
+                <span class="material-symbols-outlined">analytics</span>
+                <span>Analytics</span>
+            </a>
+
         </nav>
 
         <div class="mt-auto pt-10 px-3 pb-6">
@@ -139,12 +153,12 @@ function ad_navbar()
     ?>
 
     <header
-        class="h-16 flex items-center justify-between px-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        class="h-16 flex items-center justify-between px-4 md:px-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <!-- Mobile Menu Button -->
         <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
             <span class="material-symbols-outlined">menu</span>
         </button>
-        <div class="max-w-md w-full">
+        <div class="hidden sm:block max-w-xs lg:max-w-md w-full">
             <div class="relative">
                 <span
                     class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -153,7 +167,7 @@ function ad_navbar()
                     placeholder="Search analytics or posts..." type="text" />
             </div>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 md:gap-4">
             <!-- ======button====== -->
             <button id="themeToggle"
                 class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full flex items-center justify-center"
@@ -183,5 +197,8 @@ function ad_navbar()
         </div>
     </header>
     <?php
+    if (function_exists('inject_project_toast')) {
+        inject_project_toast();
+    }
 }
 ?>

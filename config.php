@@ -1,8 +1,6 @@
 <?php
-
-
-define('BASE_URL', 'https://localhost/BlogFusion/');
-define('POST_URL', 'https://localhost/BlogFusion/posts');
-
-
+//C:\xampp\htdocs\BlogFusion\upload\site_image\logo1.png
+define('SITE_NAME','upload/site_image/logo1.png');
+define('BASE_URL','http://localhost/BlogFusion/');
+define('POST_URL','http://localhost/BlogFusion/posts/');
 ?>

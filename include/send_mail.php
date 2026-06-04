@@ -4,11 +4,11 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
-$env = parse_ini_file("../.env");
+$env = parse_ini_file(__DIR__ . "/../.env");
 
-require '../vendor/PHPMailer/src/Exception.php';
-require '../vendor/PHPMailer/src/PHPMailer.php';
-require '../vendor/PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/../vendor/PHPMailer/src/Exception.php';
+require_once __DIR__ . '/../vendor/PHPMailer/src/PHPMailer.php';
+require_once __DIR__ . '/../vendor/PHPMailer/src/SMTP.php';
 //Create an instance; passing `true` enables exceptions
 $mail = new PHPMailer(true);
 
@@ -42,7 +42,7 @@ function send_mail($email, $name, $otp)
     //$mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
     //$mail->addAttachment('../upload/profile-images/1773820904_Screenshot 2025-11-07 135403.png', 'new.jpg');    //Optional name
     $mail->addEmbeddedImage(
-        '../upload/site_image/logo2.png', // image path
+        __DIR__ . '/../upload/site_image/logo2.png', // image path
         'logoimg' // cid name
     );
     //Content
@@ -140,16 +140,75 @@ function send_mail($email, $name, $otp)
     //echo 'Message has been sent';
     //return $send_mail;
 }
-$name = $_POST['name'];
-$email = $_POST['email'];
-$otp = $_POST['otp'];
-session_start();
-$_SESSION['otp'] = $otp;
-send_mail($email, $name, $otp);
-if ($mail->send()) {
-    echo "success";
-} else {
-    echo "error";
+
+function send_password_reset_mail($email, $name, $otp)
+{
+    global $mail;
+    $mail->addAddress($email);
+    $mail->addEmbeddedImage(
+        __DIR__ . '/../upload/site_image/logo2.png',
+        'logoimg'
+    );
+    $mail->isHTML(true);
+    $mail->Subject = 'Reset Your Blog Fusion Password';
+    $mail->Body = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Your Password</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f6f9fc; font-family: \'Helvetica Neue\', Helvetica, Arial, sans-serif;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f6f9fc; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;">
+                    
+                    <tr>
+                        <td align="center" style="padding: 40px 0 20px 0;">
+                            <div style="background-color: #e4d3ff; width: 50px; height: 50px; border-radius: 12px; display: inline-block;">
+                                <img src="cid:logoimg" width="32" height="32" style="padding: 9px; display: block;" alt="Logo">
+                            </div>
+                            <h2 style="margin: 15px 0 0 0; color: #1f2937; font-size: 30px;">Blog Fusion</h2>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 10px 40px;">
+                            <h3 style="color: #111827; font-size: 20px; margin-bottom: 10px;">Password Reset Request</h3>
+                            <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0;">
+                                Hello <span style="color: #7c3aed; font-weight: bold;">' . $name . '</span>, we received a request to reset your password. Use the verification code below to complete the reset process.
+                            </p>
+                            <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0;">
+                                <span style="color: #ba1a1a; font-weight: bold;">This code will expire in 10 minutes.</span>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 30px 20px;">
+                            <div style="display: inline-block; padding: 15px 30px; background-color: #f3f0fb; border: 2px dashed #7c3aed; border-radius: 12px; font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #7c3aed;">
+                                ' . $otp . '
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 30px 40px; background-color: #ffffff; border-top: 1px solid #f3f4f6;">
+                            <p style="margin: 20px 0 0 0; font-size: 12px; color: #9ca3af; line-height: 1.4;">
+                                &copy; 2024 Blog Fusion. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>';
+    $mail->AltBody = 'Your password reset OTP is: ' . $otp;
 }
+
+
 
 ?>

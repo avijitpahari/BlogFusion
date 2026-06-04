@@ -1,4 +1,4 @@
-<?php session_start(); ?>
+<?php session_start(); include_once "../include/functions.php"; ?>
 
 <!DOCTYPE html>
 
@@ -64,30 +64,7 @@
   <main class="max-w-md w-full glass-effect rounded-2xl shadow-xl overflow-hidden border border-white/20"
     data-purpose="signup-card">
     <!-- BEGIN: Header Section -->
-    <?php if (isset($_GET['msg']) && $_GET['msg'] == "exists") { ?>
-
-      <div id="alertBox" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-        <div
-          class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl shadow-lg">
-          <span class="material-symbols-outlined text-green-500">check_circle</span>
-          <p class="text-sm font-semibold">Email already exists</p>
-        </div>
-      </div>
-
-      <script>
-        setTimeout(() => {
-          document.getElementById("alertBox")?.remove();
-        }, 2000);
-
-        if (window.history.replaceState) {
-          const url = new URL(window.location);
-          url.searchParams.delete("msg"); // remove msg parameter
-          window.history.replaceState({}, document.title, url.pathname);
-        }
-      </script>
-
-
-    <?php } ?>
+    <?php inject_project_toast(); ?>
 
     <header class="p-8 text-center bg-gradient-to-br from-primary to-secondary text-white">
       <h1 class="text-3xl font-bold tracking-tight">Blog Fusion</h1>
@@ -116,8 +93,12 @@
             class="absolute inset-y-0 right-0 pr-3 flex items-center text-primary font-semibold text-sm hover:text-indigo-700 transition-colors"
             type="button" onclick="showOTP()" id="sendOtpBtn">
             <span id="btnText">Send OTP</span>
-            <span id="loader" style="display: none;">
-              <i class="fa fa-spinner fa-spin"></i> Loading...
+            <span id="loader" style="display: none;" class="flex items-center gap-1">
+              <svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Sending...</span>
             </span>
           </button>
         </div>
@@ -251,7 +232,6 @@
 
 
   <!-- BEGIN: Interactive Logic -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="../assets/js/register.js"></script>
   <script>
     function user_exists() {
@@ -286,29 +266,35 @@
       sendBtn.disabled = true;
 
       if (email === "") {
-        Swal.fire("Error", "Enter email first", "error");
+        showToast("Enter email first", "error");
         return;
       }
 
       // show OTP field
       document.getElementById("otp_cointener").classList.remove("hidden");
-      otp = Math.floor(100000 + Math.random() * 900000);
-      fetch("../include/send_mail.php", {
+      fetch("../actions/send_otp.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: `name=${name}&email=${email}&otp=${otp}`,
+        body: `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`,
       })
-        .then(res => res.text())
+        .then(res => res.json())
         .then(data => {
-          console.log(data);
-
-          Swal.fire("Success", "OTP Sent Successfully ", "success");
+          if (data.status === "success") {
+            showToast(data.message, "success");
+          } else if (data.status === "exists") {
+            showToast("Email already registered. Choose another one.", "error");
+            document.getElementById("otp_cointener").classList.add("hidden");
+          } else {
+            showToast(data.message || "Failed to send OTP", "error");
+            document.getElementById("otp_cointener").classList.add("hidden");
+          }
         })
         .catch(err => {
           console.error(err);
-          Swal.fire("Error", "Mail not sent ", "error");
+          showToast("Failed to send OTP. Please try again.", "error");
+          document.getElementById("otp_cointener").classList.add("hidden");
         })
         .finally(() => {
           btnText.style.display = 'inline-block';
@@ -331,7 +317,7 @@
         .then(data => {
 
           if (data === "success") {
-            Swal.fire("Verified!", "Email verified ✅", "success");
+            showToast("Email verified ✅", "success");
 
             document.getElementById("all_details").classList.remove("hidden");
             document.getElementById("otp_cointener").classList.add("hidden");
@@ -345,10 +331,10 @@
             document.getElementById("full_name").readOnly = true;
 
           } else if (data === "expired") {
-            Swal.fire("Expired", "OTP expired ", "error");
+            showToast("OTP expired", "error");
 
           } else {
-            Swal.fire("Error", "Invalid OTP ", "error");
+            showToast("Invalid OTP", "error");
           }
 
         });

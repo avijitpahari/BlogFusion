@@ -47,7 +47,7 @@
 
 
 <body class="bg-background-light dark:bg-background-dark min-h-screen">
-    <?php include "include/navbar1.php";?>
+    <?php include "../include/navbar1.php";?>
     <main>
         <!-- HERO SECTION -->
         <section class="relative py-12 lg:py-24 overflow-hidden">
@@ -346,7 +346,7 @@
             </div>
         </section>
     </main>
-    <?php include "include/footer.php"?>
+    <?php include "../include/footer.php"; ?>
 </body>
 
 </html>

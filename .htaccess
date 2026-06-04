@@ -1,0 +1,12 @@
+RewriteEngine On
+
+RewriteBase /BlogFusion/
+
+
+
+
+
+# Blog Slug Route
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^posts/[0-9]{4}/[0-9]{2}/([a-zA-Z0-9-]+)/?$ pages/single-post.php?slug=$1 [L,QSA]

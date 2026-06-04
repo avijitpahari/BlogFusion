@@ -6,34 +6,49 @@ include "../include/admin_nav_sidebar.php";
 
 // logic data
 $table = 'users';
-$limit = 4;
+$limit = 6;
 // current page
 $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-if ($page < 1)
-    $page = 1;
+if ($page < 1) $page = 1;
+
+// filter tab
+$filter = $_GET['filter'] ?? 'all';
+$where = match($filter) {
+    'active'   => "WHERE is_active = 1",
+    'inactive' => "WHERE is_active = 0",
+    'authors'  => "WHERE role = 'author'",
+    'users'    => "WHERE role = 'user'",
+    default    => ""
+};
 
 $offset = ($page - 1) * $limit;
 
 // fetch data
-$query = "SELECT * FROM $table LIMIT $limit OFFSET $offset";
+$query = "SELECT * FROM $table $where ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
 $result = mysqli_query($conn, $query);
 $data = mysqli_num_rows($result) ? mysqli_fetch_all($result, MYSQLI_ASSOC) : [];
 
 // total count
-$total_query = "SELECT COUNT(*) as total FROM $table";
+$total_query = "SELECT COUNT(*) as total FROM $table $where";
 $total_result = mysqli_query($conn, $total_query);
 $total_row = mysqli_fetch_assoc($total_result);
 $total_records = $total_row['total'];
 
-
 // call function
-$pagination = paginate($data, $total_records, $page, $offset);
+$pagination = paginate($data, $total_records, $page, $offset, $limit);
 $data24 = $pagination['data'];
 $total_pages = $pagination['total_pages'];
 $page = $pagination['current_page'];
 $limit = $pagination['limit'];
 $total_records = $pagination['total_records'];
 $offset = $pagination['offset'];
+
+// counts for tabs
+$tab_counts = [];
+foreach (['all'=>'','active'=>'WHERE is_active=1','inactive'=>'WHERE is_active=0','authors'=>"WHERE role='author'",'users'=>"WHERE role='user'"] as $tab => $w) {
+    $r = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FROM users $w"));
+    $tab_counts[$tab] = (int)($r['c'] ?? 0);
+}
 ?>
 <!DOCTYPE html>
 
@@ -81,43 +96,9 @@ $offset = $pagination['offset'];
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
     <div class="flex h-screen overflow-hidden">
-        <?php if (isset($_GET['msg'])) { ?>
-
-            <div id="alertBox" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-                <div
-                    class="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl shadow-lg">
-                    <span class="material-symbols-outlined text-green-500">check_circle</span>
-                    <p class="text-sm font-semibold">
-                        <?php
-                        switch ($_GET['msg']) {
-                            case "email":
-                                echo 'Email already exists. Please enter new email';
-                                break;
-                            case "p_not_match":
-                                echo 'Password not match. Please enter again';
-                                break;
-                            case "u_not_find":
-                                echo 'Email not match. Please enter again';
-                                break;
-                        }
-                        ?>
-                    </p>
-                </div>
-            </div>
-
-            <script>
-                setTimeout(() => {
-                    document.getElementById("alertBox")?.remove();
-                }, 2000);
-                if (window.history.replaceState) {
-                    const url = new URL(window.location);
-                    url.searchParams.delete("msg"); // remove msg parameter
-                    window.history.replaceState({}, document.title, url.pathname);
-                }
-            </script>
-
-
-        <?php } ?>
+        <?php
+        // Unified toast parameters are handled dynamically by the layout injection in ad_navbar
+        ?>
         <!-- Sidebar -->
         <?= slidebar('users'); ?>
         <div id="overlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
@@ -127,40 +108,30 @@ $offset = $pagination['offset'];
             <?= ad_navbar(); ?>
             <div class="flex-1 overflow-y-auto p-8">
                 <!-- Page Header -->
-                <div class="flex items-center justify-between mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
                         <h2 class="text-3xl font-black tracking-tight">Users</h2>
                         <p class="text-slate-500">Manage platform contributors and account access levels.</p>
                     </div>
                     <button
-                        class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all"
+                        class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 transition-all sm:self-center self-start"
                         onclick="newuser();">
                         <span class="material-symbols-outlined text-[20px]">add</span>
                         <span>Add User</span>
                     </button>
                 </div>
-                <!-- Filters -->
-                <div
-                    class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mb-8 flex flex-wrap gap-4 items-center">
-                    <div class="flex-1 min-w-[300px] relative">
-                        <span
-                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">filter_list</span>
-                        <input
-                            class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary"
-                            placeholder="Filter users by name, email or role..." type="text" />
-                    </div>
-                    <div class="flex gap-2">
-                        <button
-                            class="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">calendar_today</span>
-                            <span>Date Joined</span>
-                        </button>
-                        <button
-                            class="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">download</span>
-                            <span>Export</span>
-                        </button>
-                    </div>
+                <!-- Filter Tabs -->
+                <div class="flex gap-2 mb-5 flex-wrap">
+                    <?php
+                    $tabs = ['all'=>'All','active'=>'Active','inactive'=>'Inactive','authors'=>'Authors','users'=>'Regular Users'];
+                    foreach ($tabs as $key => $label):
+                        $active_tab = ($filter === $key);
+                        $href = '?filter=' . $key;
+                    ?>
+                    <a href="<?= $href ?>" class="px-4 py-2 rounded-xl text-sm font-bold transition-all <?= $active_tab ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50' ?>">
+                        <?= $label ?> <span class="ml-1 text-xs opacity-70">(<?= $tab_counts[$key] ?>)</span>
+                    </a>
+                    <?php endforeach; ?>
                 </div>
                 <!-- Table Container -->
 
@@ -174,6 +145,7 @@ $offset = $pagination['offset'];
                                     <th class="px-6 py-4 font-semibold">User Name</th>
                                     <th class="px-6 py-4 font-semibold">Email Address</th>
                                     <th class="px-6 py-4 font-semibold">Role</th>
+                                    <th class="px-6 py-4 font-semibold text-center">Status</th>
                                     <th class="px-6 py-4 font-semibold text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -211,25 +183,38 @@ $offset = $pagination['offset'];
                                         <td class="px-6 py-4">
                                             <span class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full 
                                                 <?php
-                                                if ($row['role'] == "admin")
-                                                    echo "bg-purple-100 text-purple-700";
-                                                elseif ($row['role'] == "author")
-                                                    echo "bg-blue-100 text-blue-700";
-                                                else
-                                                    echo "bg-slate-100 text-slate-600";
+                                                if ($row['role'] == "admin")    echo "bg-purple-100 text-purple-700";
+                                                elseif ($row['role'] == "author") echo "bg-blue-100 text-blue-700";
+                                                else echo "bg-slate-100 text-slate-600";
                                                 ?>">
                                                 <?php echo ucfirst($row['role']); ?>
                                             </span>
                                         </td>
 
+                                        <!-- STATUS TOGGLE -->
+                                        <td class="px-6 py-4 text-center">
+                                            <?php $is_active = (int)($row['is_active'] ?? 1); ?>
+                                            <div class="flex flex-col items-center gap-1">
+                                                <button type="button"
+                                                    id="toggle-<?= $row['id'] ?>"
+                                                    data-user-id="<?= $row['id'] ?>"
+                                                    data-active="<?= $is_active ?>"
+                                                    onclick="toggleUser(<?= $row['id'] ?>, <?= $is_active ?>)"
+                                                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none <?= $is_active ? 'bg-green-500' : 'bg-slate-300' ?>">
+                                                    <span id="dot-<?= $row['id'] ?>" class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 <?= $is_active ? 'translate-x-6' : 'translate-x-1' ?>"></span>
+                                                </button>
+                                                <span id="label-<?= $row['id'] ?>" class="text-[10px] font-bold <?= $is_active ? 'text-green-600' : 'text-slate-400' ?>"><?= $is_active ? 'Active' : 'Inactive' ?></span>
+                                            </div>
+                                        </td>
+
                                         <!-- ACTIONS -->
-                                        <td class="px-6 py-4 text-right" id="action_btn">
+                                        <td class="px-6 py-4 text-right">
                                             <div class="flex justify-end gap-2">
-                                                <button class="p-2 hover:text-primary">
+                                                <button class="p-2 hover:text-primary" title="Edit">
                                                     <span class="material-symbols-outlined"
                                                         onclick='loopdata(<?php echo json_encode($row); ?>);'>edit_note</span>
                                                 </button>
-                                                <button class="p-2 hover:text-red-500">
+                                                <button class="p-2 hover:text-red-500" title="Delete">
                                                     <span class="material-symbols-outlined"
                                                         onclick="delete_user(<?= $row['id']; ?>);">delete</span>
                                                 </button>
@@ -244,11 +229,12 @@ $offset = $pagination['offset'];
                         </table>
                     </div>
                     <?php
-                    $page = pagination_links(
+                    pagination_links(
                         $total_pages,
                         $limit,
                         $total_records,
-                        $offset
+                        $offset,
+                        'users'
                     );
                     ?>
                 </div>
@@ -425,14 +411,46 @@ $offset = $pagination['offset'];
         }
 
         function delete_user(id) {
-            if (!confirm('Are you sure to delete this User?')) {
-                return;
-            }
-
-            //console.log(id);
-
+            if (!confirm('Are you sure to delete this User?')) return;
             window.location.href = "../actions/admin.php?id=" + id + "&btn=user";
         };
+
+        /* ── Active / Inactive Toggle ────────────────────────── */
+        async function toggleUser(userId, currentStatus) {
+            const newStatus = currentStatus ? 0 : 1;
+            const btn   = document.getElementById('toggle-' + userId);
+            const dot   = document.getElementById('dot-'    + userId);
+            const label = document.getElementById('label-'  + userId);
+
+            const fd = new FormData();
+            fd.append('user_id', userId);
+            fd.append('status',  newStatus);
+
+            try {
+                const res  = await fetch('../actions/admin_toggle_user.php', { method: 'POST', body: fd });
+                const json = await res.json();
+                if (json.success) {
+                    btn.dataset.active = newStatus;
+                    // update onclick to reflect new state
+                    btn.setAttribute('onclick', `toggleUser(${userId}, ${newStatus})`);
+                    if (newStatus) {
+                        btn.classList.replace('bg-slate-300','bg-green-500');
+                        dot.classList.replace('translate-x-1','translate-x-6');
+                        label.textContent = 'Active';
+                        label.className = 'text-[10px] font-bold text-green-600';
+                    } else {
+                        btn.classList.replace('bg-green-500','bg-slate-300');
+                        dot.classList.replace('translate-x-6','translate-x-1');
+                        label.textContent = 'Inactive';
+                        label.className = 'text-[10px] font-bold text-slate-400';
+                    }
+                } else {
+                    alert(json.error || 'Could not update user status.');
+                }
+            } catch(e) {
+                alert('Network error. Please try again.');
+            }
+        }
 
         // Handle file upload preview or name display
         const fileInput = document.getElementById('file-upload');
