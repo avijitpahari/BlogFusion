@@ -1,50 +1,92 @@
 <?php
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
-include "../include/admin_nav_sidebar.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/admin_nav_sidebar.php';
 
 /* ══════════════════════════════════════════════════════════════════════════════
    SITE ANALYTICS — Data Layer
    All queries pull real data from the database.
 ══════════════════════════════════════════════════════════════════════════════ */
 
+/* ── Time Range Filter ───────────────────────────────────── */
+$range = $_GET['range'] ?? 'all';
+$valid_ranges = ['24h', '7d', '30d', 'all'];
+if (!in_array($range, $valid_ranges)) {
+    $range = 'all';
+}
+
+$date_filter = "";
+if ($range === '24h') {
+    $date_filter = " AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)";
+} elseif ($range === '7d') {
+    $date_filter = " AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+} elseif ($range === '30d') {
+    $date_filter = " AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+}
+
+$posts_date_filter = $date_filter;
+$users_date_filter = $date_filter;
+$comments_date_filter = $date_filter;
+$reactions_date_filter = $date_filter;
+
+$comments_date_filter_sub = str_replace('created_at', 'c.created_at', $date_filter);
+$reactions_date_filter_sub = str_replace('created_at', 'r.created_at', $date_filter);
+$comments_date_filter_sub_pp = str_replace('created_at', 'c.created_at', $date_filter);
+$reactions_date_filter_sub_pp = str_replace('created_at', 'rx.created_at', $date_filter);
+$posts_date_filter_sub = str_replace('created_at', 'p.created_at', $date_filter);
+
 // ── 1. Headline KPIs ──────────────────────────────────────────────────────────
-$total_views    = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(views) AS t FROM posts"))['t'] ?? 0);
-$total_posts    = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM posts"))['t'] ?? 0);
-$published      = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM posts WHERE status='published'"))['t'] ?? 0);
+$total_views    = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(views) AS t FROM posts WHERE 1=1" . $posts_date_filter))['t'] ?? 0);
+$total_posts    = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM posts WHERE 1=1" . $posts_date_filter))['t'] ?? 0);
+$published      = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM posts WHERE status='published'" . $posts_date_filter))['t'] ?? 0);
 $draft_count    = $total_posts - $published;
-$total_users    = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM users"))['t'] ?? 0);
-$total_comments = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM comments"))['t'] ?? 0);
-$total_reactions= (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM reactions"))['t'] ?? 0);
+$total_users    = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM users WHERE 1=1" . $users_date_filter))['t'] ?? 0);
+$total_comments = (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM comments WHERE 1=1" . $comments_date_filter))['t'] ?? 0);
+$total_reactions= (int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM reactions WHERE 1=1" . $reactions_date_filter))['t'] ?? 0);
 $total_categories=(int)(mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS t FROM categories"))['t'] ?? 0);
 
 // avg views per post
 $avg_views = $published > 0 ? round($total_views / $published) : 0;
 
-// ── 2. Month-over-month growth ────────────────────────────────────────────────
-function mom_growth($conn, $table, $col = 'created_at') {
+// ── 2. Growth calculation based on range ─────────────────────────────────────────
+function range_growth($conn, $table, $col = 'created_at', $range = 'all', $views_sum = false) {
+    $interval = '';
+    if ($range === '24h') {
+        $interval = '1 DAY';
+    } elseif ($range === '7d') {
+        $interval = '7 DAY';
+    } elseif ($range === '30d') {
+        $interval = '30 DAY';
+    } else {
+        // Default MoM
+        $sql = "SELECT
+            SUM(CASE WHEN MONTH($col)=MONTH(NOW()) AND YEAR($col)=YEAR(NOW()) THEN " . ($views_sum ? "views" : "1") . " ELSE 0 END) AS this_p,
+            SUM(CASE WHEN MONTH($col)=MONTH(DATE_SUB(NOW(),INTERVAL 1 MONTH))
+                      AND YEAR($col)=YEAR(DATE_SUB(NOW(),INTERVAL 1 MONTH)) THEN " . ($views_sum ? "views" : "1") . " ELSE 0 END) AS last_p
+            FROM $table";
+        $r = mysqli_fetch_assoc(mysqli_query($conn, $sql));
+        $t = (int)($r['this_p'] ?? 0);
+        $l = (int)($r['last_p'] ?? 0);
+        return ['this' => $t, 'last' => $l, 'pct' => round(($t - $l) / max($l, 1) * 100)];
+    }
+    
+    // For 24h, 7d, 30d comparison
+    $val_col = $views_sum ? "views" : "1";
     $sql = "SELECT
-        SUM(CASE WHEN MONTH($col)=MONTH(NOW()) AND YEAR($col)=YEAR(NOW()) THEN 1 ELSE 0 END) AS this_m,
-        SUM(CASE WHEN MONTH($col)=MONTH(DATE_SUB(NOW(),INTERVAL 1 MONTH))
-                  AND YEAR($col)=YEAR(DATE_SUB(NOW(),INTERVAL 1 MONTH)) THEN 1 ELSE 0 END) AS last_m
+        SUM(CASE WHEN $col >= DATE_SUB(NOW(), INTERVAL $interval) THEN $val_col ELSE 0 END) AS this_p,
+        SUM(CASE WHEN $col >= DATE_SUB(NOW(), INTERVAL 2 * $interval) AND $col < DATE_SUB(NOW(), INTERVAL $interval) THEN $val_col ELSE 0 END) AS last_p
         FROM $table";
     $r = mysqli_fetch_assoc(mysqli_query($conn, $sql));
-    $t = (int)($r['this_m'] ?? 0);
-    $l = (int)($r['last_m'] ?? 0);
+    $t = (int)($r['this_p'] ?? 0);
+    $l = (int)($r['last_p'] ?? 0);
     return ['this' => $t, 'last' => $l, 'pct' => round(($t - $l) / max($l, 1) * 100)];
 }
-$growth_users    = mom_growth($conn, 'users');
-$growth_posts    = mom_growth($conn, 'posts');
-$growth_comments = mom_growth($conn, 'comments');
-$growth_views_row= mysqli_fetch_assoc(mysqli_query($conn,
-    "SELECT SUM(CASE WHEN MONTH(created_at)=MONTH(NOW()) AND YEAR(created_at)=YEAR(NOW()) THEN views ELSE 0 END) AS this_m,
-            SUM(CASE WHEN MONTH(created_at)=MONTH(DATE_SUB(NOW(),INTERVAL 1 MONTH))
-                      AND YEAR(created_at)=YEAR(DATE_SUB(NOW(),INTERVAL 1 MONTH)) THEN views ELSE 0 END) AS last_m
-     FROM posts"));
-$gvt = (int)($growth_views_row['this_m'] ?? 0);
-$gvl = (int)($growth_views_row['last_m'] ?? 0);
-$growth_views = ['this' => $gvt, 'last' => $gvl, 'pct' => round(($gvt - $gvl) / max($gvl, 1) * 100)];
+$growth_users    = range_growth($conn, 'users', 'created_at', $range);
+$growth_posts    = range_growth($conn, 'posts', 'created_at', $range);
+$growth_comments = range_growth($conn, 'comments', 'created_at', $range);
+$growth_views    = range_growth($conn, 'posts', 'created_at', $range, true);
 
 function badge($pct) {
     if ($pct > 0)  return '<span class="inline-flex items-center gap-0.5 text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded-full"><span class="material-symbols-outlined text-[13px]">arrow_upward</span>+'.$pct.'%</span>';
@@ -52,23 +94,98 @@ function badge($pct) {
     return '<span class="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">0%</span>';
 }
 
-function fill_12m_trend($conn, $query) {
-    $trend = [];
-    for ($i = 11; $i >= 0; $i--) {
-        $time = strtotime("-$i months");
-        $ym = date('Y-m', $time);
-        $label = date('M Y', $time);
-        $trend[$ym] = ['label' => $label, 'total' => 0];
-    }
-    $res = mysqli_query($conn, $query);
-    if ($res) {
-        while ($r = mysqli_fetch_assoc($res)) {
-            $ym = $r['ym'];
-            if (isset($trend[$ym])) {
-                $trend[$ym]['total'] = (int)$r['total'];
+function get_range_trend($conn, $table, $col = 'created_at', $range = 'all', $sum_views = false) {
+    $val_col = $sum_views ? "SUM(views)" : "COUNT(*)";
+    
+    if ($range === '24h') {
+        $trend = [];
+        for ($i = 23; $i >= 0; $i--) {
+            $time = strtotime("-$i hours");
+            $ym = date('Y-m-d H:00', $time);
+            $label = date('H:00', $time);
+            $trend[$ym] = ['label' => $label, 'total' => 0];
+        }
+        $query = "SELECT DATE_FORMAT($col, '%Y-%m-%d %H:00') AS ym, $val_col AS total 
+                  FROM $table 
+                  WHERE $col >= DATE_SUB(NOW(), INTERVAL 24 HOUR) 
+                  GROUP BY ym";
+        $res = mysqli_query($conn, $query);
+        if ($res) {
+            while ($r = mysqli_fetch_assoc($res)) {
+                $ym = $r['ym'];
+                if (isset($trend[$ym])) {
+                    $trend[$ym]['total'] = (int)$r['total'];
+                }
+            }
+        }
+    } elseif ($range === '7d') {
+        $trend = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $time = strtotime("-$i days");
+            $ym = date('Y-m-d', $time);
+            $label = date('D M j', $time);
+            $trend[$ym] = ['label' => $label, 'total' => 0];
+        }
+        $query = "SELECT DATE_FORMAT($col, '%Y-%m-%d') AS ym, $val_col AS total 
+                  FROM $table 
+                  WHERE $col >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
+                  GROUP BY ym";
+        $res = mysqli_query($conn, $query);
+        if ($res) {
+            while ($r = mysqli_fetch_assoc($res)) {
+                $ym = $r['ym'];
+                if (isset($trend[$ym])) {
+                    $trend[$ym]['total'] = (int)$r['total'];
+                }
+            }
+        }
+    } elseif ($range === '30d') {
+        $trend = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $time = strtotime("-$i days");
+            $ym = date('Y-m-d', $time);
+            $label = date('M j', $time);
+            $trend[$ym] = ['label' => $label, 'total' => 0];
+        }
+        $query = "SELECT DATE_FORMAT($col, '%Y-%m-%d') AS ym, $val_col AS total 
+                  FROM $table 
+                  WHERE $col >= DATE_SUB(NOW(), INTERVAL 30 DAY) 
+                  GROUP BY ym";
+        $res = mysqli_query($conn, $query);
+        if ($res) {
+            while ($r = mysqli_fetch_assoc($res)) {
+                $ym = $r['ym'];
+                if (isset($trend[$ym])) {
+                    $trend[$ym]['total'] = (int)$r['total'];
+                }
+            }
+        }
+    } else {
+        $trend = [];
+        $current_year = date('Y');
+        $current_month = date('m');
+        for ($i = 11; $i >= 0; $i--) {
+            $time = mktime(0, 0, 0, $current_month - $i, 1, $current_year);
+            $ym = date('Y-m', $time);
+            $label = date('M Y', $time);
+            $trend[$ym] = ['label' => $label, 'total' => 0];
+        }
+        $query = "SELECT DATE_FORMAT($col, '%Y-%m') AS ym, $val_col AS total 
+                  FROM $table 
+                  WHERE $col >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 11 MONTH), '%Y-%m-01') 
+                  GROUP BY ym
+                  ORDER BY ym ASC";
+        $res = mysqli_query($conn, $query);
+        if ($res) {
+            while ($r = mysqli_fetch_assoc($res)) {
+                $ym = $r['ym'];
+                if (isset($trend[$ym])) {
+                    $trend[$ym]['total'] = (int)$r['total'];
+                }
             }
         }
     }
+    
     $labels = [];
     $data = [];
     foreach ($trend as $val) {
@@ -78,27 +195,23 @@ function fill_12m_trend($conn, $query) {
     return ['labels' => $labels, 'data' => $data];
 }
 
-// ── 3. Monthly views (last 12 months) ────────────────────────────────────────
-$trend_views = fill_12m_trend($conn,
-    "SELECT DATE_FORMAT(created_at,'%Y-%m') AS ym, SUM(views) AS total FROM posts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH) GROUP BY ym");
+// ── 3. Views trend based on range ────────────────────────────────────────
+$trend_views = get_range_trend($conn, 'posts', 'created_at', $range, true);
 $v12_labels = $trend_views['labels'];
 $v12_data = $trend_views['data'];
 
-// ── 4. Monthly new users (last 12 months) ─────────────────────────────────────
-$trend_users = fill_12m_trend($conn,
-    "SELECT DATE_FORMAT(created_at,'%Y-%m') AS ym, COUNT(*) AS total FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH) GROUP BY ym");
+// ── 4. Users trend based on range ─────────────────────────────────────
+$trend_users = get_range_trend($conn, 'users', 'created_at', $range);
 $u12_labels = $trend_users['labels'];
 $u12_data = $trend_users['data'];
 
-// ── 5. Monthly new posts (last 12 months) ────────────────────────────────────
-$trend_posts = fill_12m_trend($conn,
-    "SELECT DATE_FORMAT(created_at,'%Y-%m') AS ym, COUNT(*) AS total FROM posts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH) GROUP BY ym");
+// ── 5. Posts trend based on range ────────────────────────────────────
+$trend_posts = get_range_trend($conn, 'posts', 'created_at', $range);
 $p12_labels = $trend_posts['labels'];
 $p12_data = $trend_posts['data'];
 
-// ── 6. Monthly comments (last 12 months) ─────────────────────────────────────
-$trend_comments = fill_12m_trend($conn,
-    "SELECT DATE_FORMAT(created_at,'%Y-%m') AS ym, COUNT(*) AS total FROM comments WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH) GROUP BY ym");
+// ── 6. Comments trend based on range ─────────────────────────────────────
+$trend_comments = get_range_trend($conn, 'comments', 'created_at', $range);
 $c12_labels = $trend_comments['labels'];
 $c12_data = $trend_comments['data'];
 
@@ -107,12 +220,12 @@ $top_posts_res = mysqli_query($conn,
     "SELECT p.id, p.title, p.slug, p.views, p.image, p.created_at, p.status,
             u.name AS author_name, u.profile_image,
             cat.name AS category_name,
-            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
-            (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id) AS reaction_count
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id" . $comments_date_filter_sub . ") AS comment_count,
+            (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id" . $reactions_date_filter_sub . ") AS reaction_count
      FROM posts p
      LEFT JOIN users u ON p.author_id = u.id
      LEFT JOIN categories cat ON p.category_id = cat.id
-     WHERE p.status = 'published'
+     WHERE p.status = 'published'" . $posts_date_filter_sub . "
      ORDER BY p.views DESC LIMIT 10");
 $top_posts = $top_posts_res ? mysqli_fetch_all($top_posts_res, MYSQLI_ASSOC) : [];
 
@@ -121,7 +234,7 @@ $cat_views_res = mysqli_query($conn,
     "SELECT cat.name, SUM(p.views) AS total_views, COUNT(p.id) AS post_count
      FROM posts p
      INNER JOIN categories cat ON p.category_id = cat.id
-     WHERE p.status='published'
+     WHERE p.status='published'" . $posts_date_filter_sub . "
      GROUP BY cat.id, cat.name ORDER BY total_views DESC LIMIT 8");
 $cat_labels = []; $cat_views_data = []; $cat_counts = [];
 if ($cat_views_res) while ($r = mysqli_fetch_assoc($cat_views_res)) {
@@ -129,7 +242,7 @@ if ($cat_views_res) while ($r = mysqli_fetch_assoc($cat_views_res)) {
 }
 
 // ── 9. User role breakdown ────────────────────────────────────────────────────
-$role_res = mysqli_query($conn, "SELECT role, COUNT(*) AS cnt FROM users GROUP BY role");
+$role_res = mysqli_query($conn, "SELECT role, COUNT(*) AS cnt FROM users WHERE 1=1" . $users_date_filter . " GROUP BY role");
 $roles = ['admin' => 0, 'author' => 0, 'user' => 0];
 if ($role_res) while ($r = mysqli_fetch_assoc($role_res)) $roles[$r['role']] = (int)$r['cnt'];
 
@@ -138,10 +251,11 @@ $authors_res = mysqli_query($conn,
     "SELECT u.name, u.profile_image, u.role,
             SUM(p.views) AS total_views,
             COUNT(p.id) AS post_count,
-            (SELECT COUNT(*) FROM comments c INNER JOIN posts pp ON c.post_id=pp.id WHERE pp.author_id=u.id) AS comment_count,
-            (SELECT COUNT(*) FROM reactions rx INNER JOIN posts pp ON rx.post_id=pp.id WHERE pp.author_id=u.id) AS reaction_count
+            (SELECT COUNT(*) FROM comments c INNER JOIN posts pp ON c.post_id=pp.id WHERE pp.author_id=u.id" . $comments_date_filter_sub_pp . ") AS comment_count,
+            (SELECT COUNT(*) FROM reactions rx INNER JOIN posts pp ON rx.post_id=pp.id WHERE pp.author_id=u.id" . $reactions_date_filter_sub_pp . ") AS reaction_count
      FROM users u
      INNER JOIN posts p ON p.author_id = u.id
+     WHERE 1=1" . $posts_date_filter_sub . "
      GROUP BY u.id, u.name, u.profile_image, u.role
      ORDER BY total_views DESC LIMIT 10");
 $top_authors = $authors_res ? mysqli_fetch_all($authors_res, MYSQLI_ASSOC) : [];
@@ -150,9 +264,9 @@ $max_author_views = !empty($top_authors) ? (int)$top_authors[0]['total_views'] :
 // ── 11. Engagement rate (reactions + comments) per post ──────────────────────
 $engagement_res = mysqli_query($conn,
     "SELECT p.title, p.views,
-            (SELECT COUNT(*) FROM reactions r WHERE r.post_id=p.id) +
-            (SELECT COUNT(*) FROM comments c WHERE c.post_id=p.id) AS engagements
-     FROM posts p WHERE p.status='published' AND p.views > 0
+            (SELECT COUNT(*) FROM reactions r WHERE r.post_id=p.id" . $reactions_date_filter_sub . ") +
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id=p.id" . $comments_date_filter_sub . ") AS engagements
+     FROM posts p WHERE p.status='published' AND p.views > 0" . $posts_date_filter_sub . "
      ORDER BY (engagements / p.views) DESC LIMIT 5");
 $engagement_posts = $engagement_res ? mysqli_fetch_all($engagement_res, MYSQLI_ASSOC) : [];
 
@@ -175,13 +289,13 @@ if ($daily_comments_res) while ($r = mysqli_fetch_assoc($daily_comments_res)) {
 }
 
 // ── 13. Post status breakdown ─────────────────────────────────────────────────
-$status_res = mysqli_query($conn, "SELECT status, COUNT(*) AS cnt FROM posts GROUP BY status");
+$status_res = mysqli_query($conn, "SELECT status, COUNT(*) AS cnt FROM posts WHERE 1=1" . $posts_date_filter . " GROUP BY status");
 $status_data = ['published' => 0, 'draft' => 0];
 if ($status_res) while ($r = mysqli_fetch_assoc($status_res)) $status_data[$r['status']] = (int)$r['cnt'];
 
 // ── 14. Newest registered users ───────────────────────────────────────────────
 $new_users_res = mysqli_query($conn,
-    "SELECT name, email, profile_image, role, created_at FROM users ORDER BY created_at DESC LIMIT 6");
+    "SELECT name, email, profile_image, role, created_at FROM users WHERE 1=1" . $users_date_filter . " ORDER BY created_at DESC LIMIT 6");
 $new_users = $new_users_res ? mysqli_fetch_all($new_users_res, MYSQLI_ASSOC) : [];
 
 // Helpers
@@ -202,6 +316,7 @@ function time_since($dt) {
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Site Analytics — Blog Fusion Admin</title>
@@ -228,7 +343,7 @@ function time_since($dt) {
             },
         }
     </script>
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
     <style>
         .bar-fill { transition: width 0.8s cubic-bezier(.4,0,.2,1); }
         .stat-card { transition: box-shadow 0.2s, transform 0.2s; }
@@ -259,10 +374,15 @@ function time_since($dt) {
                     <h1 class="text-3xl font-black tracking-tight">Site Analytics</h1>
                     <p class="text-slate-500 mt-1 text-sm">Full-spectrum performance metrics for your blog platform.</p>
                 </div>
-                <div class="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-500">
+                <form method="GET" class="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-sm text-slate-500">
                     <span class="material-symbols-outlined text-base text-primary">calendar_today</span>
-                    <span>Updated: <strong><?= date('M j, Y, g:i a') ?></strong></span>
-                </div>
+                    <select name="range" onchange="this.form.submit()" class="bg-transparent border-none text-xs text-slate-600 dark:text-slate-300 focus:ring-0 cursor-pointer p-0 pr-6 font-medium">
+                        <option value="24h" class="dark:bg-slate-900 bg-white" <?= $range === '24h' ? 'selected' : '' ?>>Last 24 Hours</option>
+                        <option value="7d" class="dark:bg-slate-900 bg-white" <?= $range === '7d' ? 'selected' : '' ?>>Last 7 Days</option>
+                        <option value="30d" class="dark:bg-slate-900 bg-white" <?= $range === '30d' ? 'selected' : '' ?>>Last 30 Days</option>
+                        <option value="all" class="dark:bg-slate-900 bg-white" <?= $range === 'all' ? 'selected' : '' ?>>All Time</option>
+                    </select>
+                </form>
             </div>
 
             <!-- ══════════════════════════════════════════════════════════════
@@ -348,7 +468,14 @@ function time_since($dt) {
                     <div class="flex items-center justify-between mb-5">
                         <div>
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Traffic</p>
-                            <h2 class="text-lg font-bold">Monthly Page Views <span class="text-slate-400 font-normal text-sm ml-1">(last 12 months)</span></h2>
+                            <h2 class="text-lg font-bold">
+                                <?php
+                                if ($range === '24h') echo 'Hourly Page Views <span class="text-slate-400 font-normal text-sm ml-1">(last 24 hours)</span>';
+                                elseif ($range === '7d') echo 'Daily Page Views <span class="text-slate-400 font-normal text-sm ml-1">(last 7 days)</span>';
+                                elseif ($range === '30d') echo 'Daily Page Views <span class="text-slate-400 font-normal text-sm ml-1">(last 30 days)</span>';
+                                else echo 'Monthly Page Views <span class="text-slate-400 font-normal text-sm ml-1">(last 12 months)</span>';
+                                ?>
+                            </h2>
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="flex items-center gap-1 text-xs text-slate-500"><span class="w-3 h-3 rounded-full bg-primary inline-block"></span>Views</span>
@@ -451,7 +578,14 @@ function time_since($dt) {
                         </div>
                         <div class="text-right">
                             <p class="text-xl font-black text-primary"><?= $growth_users['this'] ?></p>
-                            <p class="text-[10px] text-slate-400">this month</p>
+                            <p class="text-[10px] text-slate-400">
+                                <?php
+                                if ($range === '24h') echo 'last 24 hours';
+                                elseif ($range === '7d') echo 'last 7 days';
+                                elseif ($range === '30d') echo 'last 30 days';
+                                else echo 'this month';
+                                ?>
+                            </p>
                         </div>
                     </div>
                     <div style="height:120px;"><canvas id="usersChart"></canvas></div>
@@ -466,7 +600,14 @@ function time_since($dt) {
                         </div>
                         <div class="text-right">
                             <p class="text-xl font-black text-indigo-500"><?= $growth_posts['this'] ?></p>
-                            <p class="text-[10px] text-slate-400">this month</p>
+                            <p class="text-[10px] text-slate-400">
+                                <?php
+                                if ($range === '24h') echo 'last 24 hours';
+                                elseif ($range === '7d') echo 'last 7 days';
+                                elseif ($range === '30d') echo 'last 30 days';
+                                else echo 'this month';
+                                ?>
+                            </p>
                         </div>
                     </div>
                     <div style="height:120px;"><canvas id="postsChart"></canvas></div>
@@ -481,7 +622,14 @@ function time_since($dt) {
                         </div>
                         <div class="text-right">
                             <p class="text-xl font-black text-amber-500"><?= $growth_comments['this'] ?></p>
-                            <p class="text-[10px] text-slate-400">this month</p>
+                            <p class="text-[10px] text-slate-400">
+                                <?php
+                                if ($range === '24h') echo 'last 24 hours';
+                                elseif ($range === '7d') echo 'last 7 days';
+                                elseif ($range === '30d') echo 'last 30 days';
+                                else echo 'this month';
+                                ?>
+                            </p>
                         </div>
                     </div>
                     <div style="height:120px;"><canvas id="commentsChart"></canvas></div>
@@ -586,7 +734,7 @@ function time_since($dt) {
                                 <td class="px-3 py-3">
                                     <div class="flex items-center gap-2 min-w-0">
                                         <?php if ($post['image']): ?>
-                                        <img src="../<?= htmlspecialchars($post['image']) ?>" class="w-9 h-9 rounded-lg object-cover flex-shrink-0" onerror="this.src='https://placehold.co/36x36/e8dfee/7C3AED?text=P'" />
+                                        <img src="<?= BASE_URL ?><?= htmlspecialchars($post['image']) ?>" class="w-9 h-9 rounded-lg object-cover flex-shrink-0" onerror="this.src='https://placehold.co/36x36/e8dfee/7C3AED?text=P'" />
                                         <?php else: ?>
                                         <div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                                             <span class="material-symbols-outlined text-primary text-[16px]">article</span>
@@ -602,7 +750,7 @@ function time_since($dt) {
                                 </td>
                                 <td class="px-3 py-3 hidden lg:table-cell">
                                     <div class="flex items-center gap-2">
-                                        <img src="../<?= htmlspecialchars($post['profile_image'] ?: 'upload/profile-images/default.png') ?>" class="w-6 h-6 rounded-full object-cover" onerror="this.src='../upload/profile-images/default.png'" />
+                                        <img src="<?= BASE_URL ?><?= htmlspecialchars($post['profile_image'] ?: 'upload/profile-images/default.png') ?>" class="w-6 h-6 rounded-full object-cover" onerror="this.src='<?= BASE_URL ?>upload/profile-images/default.png'" />
                                         <span class="text-sm truncate max-w-[100px]"><?= htmlspecialchars($post['author_name'] ?? 'Unknown') ?></span>
                                     </div>
                                 </td>
@@ -657,9 +805,9 @@ function time_since($dt) {
                                 <?= $rank_text ?>
                             </span>
                             <div class="relative flex-shrink-0">
-                                <img src="../<?= htmlspecialchars($au['profile_image'] ?: 'upload/profile-images/default.png') ?>"
+                                <img src="<?= BASE_URL ?><?= htmlspecialchars($au['profile_image'] ?: 'upload/profile-images/default.png') ?>"
                                      class="w-10 h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-800"
-                                     onerror="this.src='../upload/profile-images/default.png'" />
+                                     onerror="this.src='<?= BASE_URL ?>upload/profile-images/default.png'" />
                                 <span class="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[9px] text-white ring-2 ring-white dark:ring-slate-900" title="Active">
                                     <span class="material-symbols-outlined text-[10px] font-bold">check</span>
                                 </span>
@@ -719,9 +867,9 @@ function time_since($dt) {
                     <div class="divide-y divide-slate-100 dark:divide-slate-800">
                         <?php foreach ($new_users as $nu): ?>
                         <div class="px-5 py-3.5 flex items-center gap-3">
-                            <img src="../<?= htmlspecialchars($nu['profile_image'] ?: 'upload/profile-images/default.png') ?>"
+                            <img src="<?= BASE_URL ?><?= htmlspecialchars($nu['profile_image'] ?: 'upload/profile-images/default.png') ?>"
                                  class="w-9 h-9 rounded-xl object-cover flex-shrink-0"
-                                 onerror="this.src='../upload/profile-images/default.png'" />
+                                 onerror="this.src='<?= BASE_URL ?>upload/profile-images/default.png'" />
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-semibold truncate"><?= htmlspecialchars($nu['name']) ?></p>
                                 <p class="text-[11px] text-slate-400 truncate"><?= htmlspecialchars($nu['email']) ?></p>
@@ -749,7 +897,7 @@ function time_since($dt) {
     </main>
 </div>
 
-<script src="../assets/js/admin.js"></script>
+<script src="<?= BASE_URL ?>assets/js/admin.js"></script>
 <script>
 Chart.defaults.font.family = "'Public Sans', sans-serif";
 Chart.defaults.color = '#64748b';

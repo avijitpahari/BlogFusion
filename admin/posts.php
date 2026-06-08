@@ -1,9 +1,11 @@
-<?php include "../include/session.php"; 
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
-include "../include/functions.php";
-include "../include/admin_nav_sidebar.php";
-include "../include/pagination.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/functions.php';
+include BASE_PATH . 'include/admin_nav_sidebar.php';
+include BASE_PATH . 'include/pagination.php';
 
 $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, trim($_GET['search'])) : '';
 $category_id = isset($_GET['category']) ? (int)$_GET['category'] : 0;
@@ -67,6 +69,7 @@ $categories = $cat_result ? mysqli_fetch_all($cat_result, MYSQLI_ASSOC) : [];
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Blog Fusion - Admin Posts</title>
@@ -103,7 +106,7 @@ $categories = $cat_result ? mysqli_fetch_all($cat_result, MYSQLI_ASSOC) : [];
             },
         }
     </script>
-    <link rel="stylesheet" href="../assets/css/admin.css"> 
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
@@ -228,7 +231,7 @@ $categories = $cat_result ? mysqli_fetch_all($cat_result, MYSQLI_ASSOC) : [];
                                             <td class="px-6 py-4 hidden sm:table-cell">
                                                 <div class="w-14 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden">
                                                     <?php if ($row['image']): ?>
-                                                        <img alt="Post thumbnail" class="w-full h-full object-cover" src="../<?= htmlspecialchars($row['image']) ?>" onerror="this.src='https://placehold.co/56x40/e8dfee/630ed4?text=P'" />
+                                                        <img alt="Post thumbnail" class="w-full h-full object-cover" src="<?= BASE_URL ?><?= htmlspecialchars($row['image']) ?>" onerror="this.src='https://placehold.co/56x40/e8dfee/630ed4?text=P'" />
                                                     <?php else: ?>
                                                         <div class="w-full h-full bg-primary/10 flex items-center justify-center">
                                                             <span class="material-symbols-outlined text-primary text-sm">article</span>
@@ -248,7 +251,7 @@ $categories = $cat_result ? mysqli_fetch_all($cat_result, MYSQLI_ASSOC) : [];
                                             </td>
                                             <td class="px-6 py-4 hidden lg:table-cell">
                                                 <div class="flex items-center gap-2">
-                                                    <img alt="Author" class="w-6 h-6 rounded-full object-cover" src="../<?= htmlspecialchars($row['author_image'] ?: 'upload/profile-images/default.png') ?>" onerror="this.src='../upload/profile-images/default.png'" />
+                                                    <img alt="Author" class="w-6 h-6 rounded-full object-cover" src="<?= BASE_URL ?><?= htmlspecialchars($row['author_image'] ?: 'upload/profile-images/default.png') ?>" onerror="this.src='<?= BASE_URL ?>upload/profile-images/default.png'" />
                                                     <span class="text-sm font-medium"><?= htmlspecialchars($row['author_name'] ?? 'Admin') ?></span>
                                                 </div>
                                             </td>
@@ -283,7 +286,7 @@ $categories = $cat_result ? mysqli_fetch_all($cat_result, MYSQLI_ASSOC) : [];
             </div>
         </main>
     </div>
-    <script src="../assets/js/admin.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/admin.js"></script>
     <script>
         let pendingDeleteId = null;
 
@@ -302,7 +305,7 @@ $categories = $cat_result ? mysqli_fetch_all($cat_result, MYSQLI_ASSOC) : [];
             const id = pendingDeleteId;
             closeDeleteModal();
 
-            fetch(`../actions/admin.php?btn=post&id=${id}&ajax=1`)
+            fetch(`<?= BASE_URL ?>actions/admin.php?btn=post&id=${id}&ajax=1`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {

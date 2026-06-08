@@ -7,8 +7,9 @@
  *   2. verify_reset_otp – verify the 6-digit code
  *   3. reset_password   – update password (requires verified OTP)
  */
-include "../include/session.php";
-include "../include/db.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
+include BASE_PATH . 'include/db.php';
 
 header('Content-Type: application/json');
 
@@ -42,7 +43,7 @@ if ($action === 'send_reset_otp') {
     $_SESSION['reset_otp_verified'] = false;
 
     try {
-        include "../include/send_mail.php";
+        include BASE_PATH . 'include/send_mail.php';
         send_password_reset_mail($user['email'], $user['name'], $otp);
         $mail->send();
         echo json_encode(['success' => true, 'email' => substr($email, 0, 3) . '***@' . explode('@', $email)[1]]);

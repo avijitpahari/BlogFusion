@@ -1,7 +1,6 @@
 <?php
-
-
-include 'db.php';
+require_once dirname(__DIR__) . '/config.php';
+include_once __DIR__ . '/db.php';
 global $conn;
 
 function data_featch($conn,$user_id){
@@ -16,12 +15,12 @@ function data_featch($conn,$user_id){
     $data = mysqli_fetch_assoc($result);
     if (!$data) {
         return [
-            'image' => '../upload/profile-images/default.png',
+            'image' => BASE_URL . 'upload/profile-images/default.png',
             'data' => null
         ];
     }
 
-    $image='../'.$data["profile_image"];
+    $image = BASE_URL . $data["profile_image"];
 
     return [
         'image'=> $image,

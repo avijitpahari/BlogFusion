@@ -1,9 +1,11 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
+include BASE_PATH . 'include/db.php';
 
-include "../include/admin_nav_sidebar.php";
-include "../include/pagination.php";
+include BASE_PATH . 'include/admin_nav_sidebar.php';
+include BASE_PATH . 'include/pagination.php';
 $id = $_SESSION['user_id'];
 // logic data
 $table = 'categories';
@@ -66,6 +68,7 @@ $all_data = mysqli_num_rows($run56) ? mysqli_fetch_all($run56, MYSQLI_ASSOC) : [
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Blog Fusion - Categories Management</title>
@@ -102,7 +105,7 @@ $all_data = mysqli_num_rows($run56) ? mysqli_fetch_all($run56, MYSQLI_ASSOC) : [
             },
         }
     </script>
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
@@ -213,8 +216,8 @@ $all_data = mysqli_num_rows($run56) ? mysqli_fetch_all($run56, MYSQLI_ASSOC) : [
                                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                                     <?php foreach ($all_data as $row) {
                                         $avatar_url = !empty($row['author_avatar']) ? $row['author_avatar'] : 'upload/profile-images/default.png';
-                                        if (strpos($avatar_url, 'http') !== 0 && strpos($avatar_url, '../') !== 0) {
-                                            $avatar_url = '../' . $avatar_url;
+                                        if (strpos($avatar_url, 'http') !== 0 && strpos($avatar_url, BASE_URL) !== 0) {
+                                            $avatar_url = BASE_URL . $avatar_url;
                                         }
                                         ?>
                                         <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
@@ -308,7 +311,7 @@ $all_data = mysqli_num_rows($run56) ? mysqli_fetch_all($run56, MYSQLI_ASSOC) : [
                         </button>
                     </div>
                     <!-- Modal Body -->
-                    <form class="p-6 space-y-5" action="../actions/admin.php?page=<?php echo $_GET['page'] ?? $page; ?>"
+                    <form class="p-6 space-y-5" action="<?= BASE_URL ?>actions/admin.php?page=<?php echo $_GET['page'] ?? $page; ?>"
                         method="POST">
                         <!-- Name -->
                         <div>
@@ -367,7 +370,7 @@ $all_data = mysqli_num_rows($run56) ? mysqli_fetch_all($run56, MYSQLI_ASSOC) : [
                     </button>
                 </div>
                 <!-- Modal Body -->
-                <form class="p-6 space-y-5" action="../actions/admin.php?page=<?php echo $_GET['page'] ?? $page; ?>"
+                <form class="p-6 space-y-5" action="<?= BASE_URL ?>actions/admin.php?page=<?php echo $_GET['page'] ?? $page; ?>"
                     method="POST">
                     <input type="hidden" id="id" name="id" value="">
                     <!-- Name -->
@@ -421,7 +424,7 @@ $all_data = mysqli_num_rows($run56) ? mysqli_fetch_all($run56, MYSQLI_ASSOC) : [
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <form action="../actions/admin.php" method="POST" class="space-y-4">
+            <form action="<?= BASE_URL ?>actions/admin.php" method="POST" class="space-y-4">
                 <input type="hidden" id="request_id" name="request_id">
                 <div class="space-y-4">
                     <div>
@@ -443,7 +446,7 @@ $all_data = mysqli_num_rows($run56) ? mysqli_fetch_all($run56, MYSQLI_ASSOC) : [
             </form>
         </div>
     </div>
-    <script src="../assets/js/admin.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/admin.js"></script>
     <script>
         function toggleModal(modalId, show) {
             const modal = document.getElementById(modalId);
@@ -466,7 +469,7 @@ $all_data = mysqli_num_rows($run56) ? mysqli_fetch_all($run56, MYSQLI_ASSOC) : [
                 return;
             }
 
-            window.location.href = "../actions/admin.php?id=" + id + "&btn=category";
+            window.location.href = "<?= BASE_URL ?>actions/admin.php?id=" + id + "&btn=category";
         };
         function slug_generator() {
             let name = document.getElementById("add-name").value;

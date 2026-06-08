@@ -1,21 +1,15 @@
 <?php
-
+require_once dirname(__DIR__) . '/config.php';
 session_start();
-
-include "../include/db.php";
+include BASE_PATH . "include/db.php";
 
 if(!isset($_SESSION['user_id'])){
-
-    header("Location: ../pages/login.php");
+    header("Location: " . BASE_URL . "pages/login.php");
     exit;
 }
 
 if($_SERVER['REQUEST_METHOD'] !== 'POST'){
-
-    header(
-        "Location: ../author/request-category.php"
-    );
-
+    header("Location: " . BASE_URL . "author/request-category.php");
     exit;
 }
 
@@ -36,10 +30,7 @@ if(empty($category_name) || empty($reason)){
     $_SESSION['message'] =
     "Please fill all fields";
 
-    header(
-        "Location: ../author/request-category.php"
-    );
-
+    header("Location: " . BASE_URL . "author/request-category.php");
     exit;
 }
 
@@ -82,10 +73,7 @@ if(mysqli_num_rows($check_request)>0){
     $_SESSION['message'] =
     "Category already requested";
 
-    header(
-    "Location: ../author/request-category.php"
-    );
-
+    header("Location: " . BASE_URL . "author/request-category.php");
     exit;
 }
 
@@ -110,10 +98,7 @@ if(mysqli_num_rows($check_category)>0){
     $_SESSION['message'] =
     "Category already exists";
 
-    header(
-    "Location: ../author/request-category.php"
-    );
-
+    header("Location: " . BASE_URL . "author/request-category.php");
     exit;
 }
 
@@ -155,10 +140,7 @@ if(mysqli_query($conn,$sql)){
     mysqli_error($conn);
 }
 
-header(
-"Location: ../author/request-category.php"
-);
-
+header("Location: " . BASE_URL . "author/request-category.php");
 exit;
 
 ?>

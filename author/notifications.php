@@ -1,8 +1,9 @@
 <?php
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
-include "../include/author_nav_sidebar.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/author_nav_sidebar.php';
 
 $user_id = (int)$_SESSION['user_id'];
 
@@ -55,6 +56,7 @@ foreach ($notifications_db as $n) {
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Notifications - Luminous Editor</title>

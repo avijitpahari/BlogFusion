@@ -1,7 +1,8 @@
 <?php
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
+include BASE_PATH . 'include/db.php';
 
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename=blogfusion_comments_' . date('Y-m-d') . '.csv');

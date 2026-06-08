@@ -1,9 +1,10 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
-include "../include/admin_nav_sidebar.php";
-include "../config.php";
-include "../include/functions.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/admin_nav_sidebar.php';
+include BASE_PATH . 'include/functions.php';
 
 $is_edit = false;
 $post_data = [];
@@ -25,6 +26,7 @@ $cat_result = mysqli_query($conn, "SELECT * FROM categories ORDER BY name ASC");
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title><?= $is_edit ? 'Edit Post' : 'Add New Post' ?> | Blog Fusion Admin</title>
@@ -65,8 +67,8 @@ $cat_result = mysqli_query($conn, "SELECT * FROM categories ORDER BY name ASC");
             },
         }
     </script>
-    <link rel="stylesheet" href="../assets/css/admin.css">
-    <script src="../vendor/tinymce/tinymce.min.js"></script>
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
+    <script src="<?= BASE_URL ?>vendor/tinymce/tinymce.min.js"></script>
     <style>
         body { font-family: 'Public Sans', sans-serif; }
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
@@ -86,7 +88,7 @@ $cat_result = mysqli_query($conn, "SELECT * FROM categories ORDER BY name ASC");
 
             <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto p-6 md:p-8">
-                <form action="<?= $is_edit ? '../actions/admin_post_update.php' : '../actions/admin_post.php' ?>" method="POST" enctype="multipart/form-data">
+                <form action="<?= $is_edit ? BASE_URL . 'actions/admin_post_update.php' : BASE_URL . 'actions/admin_post.php' ?>" method="POST" enctype="multipart/form-data">
                     <?php if ($is_edit): ?>
                         <input type="hidden" name="id" value="<?= (int)$post_data['id'] ?>" />
                         <input type="hidden" name="old_image" value="<?= htmlspecialchars($post_data['image'] ?? '') ?>" />
@@ -289,7 +291,7 @@ $cat_result = mysqli_query($conn, "SELECT * FROM categories ORDER BY name ASC");
         </main>
     </div>
 
-    <script src="../assets/js/admin.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/admin.js"></script>
     <script>
         // ── TinyMCE Init ──────────────────────────────────────────────────────────
         tinymce.init({
@@ -299,7 +301,7 @@ $cat_result = mysqli_query($conn, "SELECT * FROM categories ORDER BY name ASC");
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | alignleft aligncenter alignright justify | bullist numlist | forecolor backcolor | link image table | code preview',
             image_title: true,
             automatic_upload: true,
-            images_upload_url: '../actions/upload_image.php',
+            images_upload_url: '<?= BASE_URL ?>actions/upload_image.php',
             images_upload_base_path: '',
             relative_urls: false,
             remove_script_host: false,
@@ -349,7 +351,7 @@ $cat_result = mysqli_query($conn, "SELECT * FROM categories ORDER BY name ASC");
         // Pre-fill existing image when editing
         <?php if ($is_edit && !empty($post_data['image'])): ?>
         (function () {
-            const existingImg = '../<?= htmlspecialchars($post_data['image']) ?>';
+            const existingImg = '<?= BASE_URL ?><?= htmlspecialchars($post_data['image']) ?>';
             seoPreviewImage.src = existingImg;
             seoPlaceholder.classList.add('hidden');
             seoPreviewWrapper.classList.remove('hidden');
@@ -402,7 +404,7 @@ $cat_result = mysqli_query($conn, "SELECT * FROM categories ORDER BY name ASC");
             const name      = nameInput.value.trim();
             if (!name) return;
 
-            fetch('../actions/admin_add_category.php', {
+            fetch('<?= BASE_URL ?>actions/admin_add_category.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: 'name=' + encodeURIComponent(name)

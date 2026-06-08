@@ -1,8 +1,10 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
-include "../include/author_nav_sidebar.php";
-//include "../include/data_fetch.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/author_nav_sidebar.php';
+//include BASE_PATH . 'include/data_fetch.php';
 
 $table = 'comments';
 $limit = 6;
@@ -52,7 +54,7 @@ $stats_query = "SELECT
     WHERE p.author_id = $id AND c.parent_id IS NULL";
 $stats = mysqli_fetch_assoc(mysqli_query($conn, $stats_query));
 
-include "../include/pagination.php";
+include BASE_PATH . 'include/pagination.php';
 $pagination = paginate($data, $total_records, $page, $offset, $limit);
 $data24 = $pagination['data'];
 $total_pages = $pagination['total_pages'];
@@ -75,6 +77,7 @@ function getReplies($conn, $comment_id) {
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Comments - Luminous Editor</title>
@@ -274,7 +277,7 @@ function getReplies($conn, $comment_id) {
                             <!-- Avatar + user info -->
                             <div class="flex items-center gap-3 sm:gap-0 sm:flex-col sm:items-center sm:w-16 shrink-0">
                                 <img class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl object-cover shadow-sm bg-surface-container"
-                                    src="../<?= htmlspecialchars($commenter_data['profile_image'] ?? 'upload/profile-images/default.png') ?>"
+                                    src="<?= BASE_URL ?><?= htmlspecialchars($commenter_data['profile_image'] ?? 'upload/profile-images/default.png') ?>"
                                     onerror="this.src='https://placehold.co/48x48/e8dfee/630ed4?text=U'"
                                     alt="avatar">
                                 <div class="sm:hidden">
@@ -303,7 +306,7 @@ function getReplies($conn, $comment_id) {
 
                                 <!-- Post link -->
                                 <div class="mt-3 inline-flex items-center gap-2 bg-surface-container px-3 py-1.5 rounded-xl text-xs font-semibold text-primary hover:bg-surface-container-high transition-colors cursor-pointer"
-                                     onclick="window.open('../redirect-post.php?id=<?= $row['post_id'] ?>', '_blank')">
+                                     onclick="window.open('<?= BASE_URL ?>redirect-post.php?id=<?= $row['post_id'] ?>', '_blank')">
                                     <span class="material-symbols-outlined text-xs" style="font-size:14px">article</span>
                                     <span class="truncate max-w-[180px] sm:max-w-xs"><?= htmlspecialchars($row['post_title']) ?></span>
                                 </div>
@@ -347,7 +350,7 @@ function getReplies($conn, $comment_id) {
                                 <div class="flex items-start gap-3" id="reply-item-<?= $reply['id'] ?>">
                                     <div class="shrink-0 w-1 self-stretch bg-<?= $is_me ? 'primary' : 'outline-variant' ?> rounded-full opacity-30"></div>
                                     <img class="w-8 h-8 rounded-xl object-cover bg-surface-container shrink-0"
-                                        src="../<?= htmlspecialchars($reply_user_data['profile_image'] ?? 'upload/profile-images/default.png') ?>"
+                                        src="<?= BASE_URL ?><?= htmlspecialchars($reply_user_data['profile_image'] ?? 'upload/profile-images/default.png') ?>"
                                         onerror="this.src='https://placehold.co/32x32/e8dfee/630ed4?text=U'"
                                         alt="avatar">
                                     <div class="flex-1 min-w-0">
@@ -377,7 +380,7 @@ function getReplies($conn, $comment_id) {
                             <!-- Reply compose box -->
                             <div class="flex items-start gap-3">
                                 <img class="w-8 h-8 rounded-xl object-cover bg-surface-container shrink-0 mt-1"
-                                    src="../<?php
+                                    src="<?= BASE_URL ?><?php
                                         $me = data_featch($conn, $id);
                                         echo htmlspecialchars($me['data']['profile_image'] ?? 'upload/profile-images/default.png');
                                     ?>"
@@ -470,7 +473,7 @@ function getReplies($conn, $comment_id) {
             btn.disabled = true;
             btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin" style="font-size:16px">autorenew</span> Sending…';
 
-            fetch('../actions/author_comment_reply.php', {
+            fetch('<?= BASE_URL ?>actions/author_comment_reply.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'parent_id=' + commentId + '&comment=' + encodeURIComponent(text)
@@ -535,7 +538,7 @@ function getReplies($conn, $comment_id) {
         /* ── Delete Reply (AJAX) ── */
         function deleteReply(replyId, commentId) {
             if (!confirm('Delete this reply?')) return;
-            fetch('../actions/author.php?btn=comment&id=' + replyId, { method: 'GET' })
+            fetch('<?= BASE_URL ?>actions/author.php?btn=comment&id=' + replyId, { method: 'GET' })
             .then(r => {
                 // author.php uses echo <script> style — we check via status
                 const el = document.getElementById('reply-item-' + replyId);
@@ -564,7 +567,7 @@ function getReplies($conn, $comment_id) {
             btn.disabled = true;
             btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">autorenew</span> Deleting…';
 
-            fetch('../actions/delete_comment.php', {
+            fetch('<?= BASE_URL ?>actions/delete_comment.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'id=' + pendingDeleteId

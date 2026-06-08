@@ -1,9 +1,11 @@
-
-<!DOCTYPE html>
+<?php
+require_once dirname(__DIR__) . '/config.php';
+?><!DOCTYPE html>
 
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Blog Fusion | Insights into Tech, Programming &amp; Business</title>
@@ -47,7 +49,7 @@
 
 
 <body class="bg-background-light dark:bg-background-dark min-h-screen">
-    <?php include "../include/navbar1.php";?>
+    <?php include BASE_PATH . 'include/navbar1.php';?>
     <main>
         <!-- HERO SECTION -->
         <section class="relative py-12 lg:py-24 overflow-hidden">
@@ -346,7 +348,7 @@
             </div>
         </section>
     </main>
-    <?php include "../include/footer.php"; ?>
+    <?php include BASE_PATH . 'include/footer.php'; ?>
 </body>
 
 </html>

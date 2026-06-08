@@ -1,9 +1,10 @@
 <?php
 // actions/toggle_post_status.php
 // AJAX POST: toggle a post's status between published/draft
-include '../include/session.php';
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include '../include/db.php';
+include BASE_PATH . 'include/db.php';
 
 header('Content-Type: application/json');
 

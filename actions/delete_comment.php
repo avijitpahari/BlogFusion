@@ -1,9 +1,10 @@
 <?php
 // actions/delete_comment.php
 // AJAX POST: delete a comment (and cascade replies) for the logged-in author
-include '../include/session.php';
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include '../include/db.php';
+include BASE_PATH . 'include/db.php';
 
 header('Content-Type: application/json');
 

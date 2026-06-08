@@ -1,5 +1,5 @@
 <?php
-include "data_fetch.php";
+include_once __DIR__ . '/data_fetch.php';
 $data_fetch = data_featch($conn, $_SESSION['user_id']);
 $data1 = $data_fetch['data'];
 
@@ -76,7 +76,7 @@ function slidebar($active)
                 <span class="material-symbols-outlined">auto_awesome</span>
             </div> -->
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-primary"><img src="../upload/site_image/logo1.png" alt=""></h1>
+                <h1 class="text-xl font-bold tracking-tight text-primary"><img src="<?= BASE_URL ?>upload/site_image/logo1.png" alt=""></h1>
                 <p class="text-xs text-slate-500 font-medium uppercase tracking-wider">Admin Portal</p>
             </div>
         </div>
@@ -135,7 +135,7 @@ function slidebar($active)
         </nav>
 
         <div class="mt-auto pt-10 px-3 pb-6">
-            <a href="../actions/logout.php"
+            <a href="<?= BASE_URL ?>actions/logout.php"
                 class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all">
                 <span class="material-symbols-outlined">logout</span>
                 <span>Logout</span>
@@ -190,7 +190,7 @@ function ad_navbar()
                     data-alt="Close up portrait of a professional male administrator" src="<?php if ($data_fetch['image']) {
                         echo $data_fetch['image'];
                     } else {
-                        echo '../upload/profile-images/default.png';
+                        echo BASE_URL . 'upload/profile-images/default.png';
                     }
                     ?>" />
             </div>

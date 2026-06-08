@@ -1,6 +1,10 @@
-<?php include_once "../include/functions.php"; ?><!DOCTYPE html>
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include_once BASE_PATH . 'include/functions.php';
+?><!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -215,7 +219,7 @@
             fd.append('email', email);
             
             try {
-                const res = await fetch('../actions/author_forgot_password.php', { method: 'POST', body: fd });
+                const res = await fetch('<?= BASE_URL ?>actions/author_forgot_password.php', { method: 'POST', body: fd });
                 const json = await res.json();
                 if (json.success) {
                     document.getElementById('sent-email-label').textContent = json.email;
@@ -256,7 +260,7 @@
             fd1.append('otp', otp);
             
             try {
-                const res1 = await fetch('../actions/author_forgot_password.php', { method: 'POST', body: fd1 });
+                const res1 = await fetch('<?= BASE_URL ?>actions/author_forgot_password.php', { method: 'POST', body: fd1 });
                 const json1 = await res1.json();
                 if (!json1.success) {
                     document.querySelectorAll('.otp-digit').forEach(b => b.classList.add('border-red-400'));
@@ -271,7 +275,7 @@
                 fd2.append('new_password', newPwd);
                 fd2.append('confirm_password', confirmPwd);
                 
-                const res2 = await fetch('../actions/author_forgot_password.php', { method: 'POST', body: fd2 });
+                const res2 = await fetch('<?= BASE_URL ?>actions/author_forgot_password.php', { method: 'POST', body: fd2 });
                 const json2 = await res2.json();
                 if (json2.success) {
                     showToast('✅ Password reset successfully! Redirecting to login...');

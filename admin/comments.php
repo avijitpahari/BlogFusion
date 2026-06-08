@@ -1,9 +1,11 @@
-<?php include "../include/session.php"; 
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
-include "../include/functions.php";
-include "../include/admin_nav_sidebar.php";
-include "../include/pagination.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/functions.php';
+include BASE_PATH . 'include/admin_nav_sidebar.php';
+include BASE_PATH . 'include/pagination.php';
 
 $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, trim($_GET['search'])) : '';
 
@@ -87,6 +89,7 @@ $offset = $pagination['offset'];
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Blog Fusion - Comments Management</title>
@@ -123,7 +126,7 @@ $offset = $pagination['offset'];
             },
         }
     </script>
-    <link rel="stylesheet" href="../assets/css/admin.css"> 
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
@@ -187,8 +190,8 @@ $offset = $pagination['offset'];
                                 </tr>
                                 <?php else: foreach ($comments as $row):
                                     $avatar_url = $row['user_avatar'] ? $row['user_avatar'] : 'upload/profile-images/default.png';
-                                    if (strpos($avatar_url, 'http') !== 0 && strpos($avatar_url, '../') !== 0) {
-                                        $avatar_url = '../' . $avatar_url;
+                                    if (strpos($avatar_url, 'http') !== 0 && strpos($avatar_url, BASE_URL) !== 0) {
+                                        $avatar_url = BASE_URL . $avatar_url;
                                     }
                                 ?>
                                 <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
@@ -206,7 +209,7 @@ $offset = $pagination['offset'];
                                     </td>
                                     <td class="px-6 py-4">
                                         <a class="text-sm font-medium text-primary hover:underline line-clamp-1"
-                                            href="../redirect-post.php?id=<?= $row['post_id'] ?>" target="_blank">
+                                            href="<?= BASE_URL ?>redirect-post.php?id=<?= $row['post_id'] ?>" target="_blank">
                                             <?= htmlspecialchars($row['post_title'] ?? 'Deleted Post') ?>
                                         </a>
                                     </td>
@@ -244,11 +247,11 @@ $offset = $pagination['offset'];
         </main>
     </div>
 
-    <script src="../assets/js/admin.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/admin.js"></script>
     <script>
         function deleteComment(id) {
             if (confirm("Are you sure you want to delete this comment? This will permanently delete the comment and all its replies.")) {
-                window.location.href = "../actions/admin.php?btn=comment&id=" + id;
+                window.location.href = "<?= BASE_URL ?>actions/admin.php?btn=comment&id=" + id;
             }
         }
 

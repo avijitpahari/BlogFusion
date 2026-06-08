@@ -1,8 +1,9 @@
 <?php
-include '../include/session.php';
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include '../include/db.php';
-include '../include/functions.php';
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $post_id   = isset($_POST['id']) ? (int)$_POST['id'] : 0;
@@ -11,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Admin can update ANY post — no author_id restriction
     $check_res = mysqli_query($conn, "SELECT id, image, status FROM posts WHERE id = $post_id LIMIT 1");
     if (!$check_res || mysqli_num_rows($check_res) === 0) {
-        header("Location: ../admin/posts.php?error=Post+not+found");
+        header("Location: " . BASE_URL . "admin/posts.php?error=Post+not+found");
         exit();
     }
 
@@ -54,13 +55,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($result) {
         if ($upload_ok) {
-            move_uploaded_file($file['tmp_name'], '../' . $path);
-            if ($old_image && file_exists('../' . $old_image)) {
-                @unlink('../' . $old_image);
+            move_uploaded_file($file['tmp_name'], BASE_PATH . $path);
+            if ($old_image && file_exists(BASE_PATH . $old_image)) {
+                @unlink(BASE_PATH . $old_image);
             }
         } elseif ($delete_image) {
-            if ($old_image && file_exists('../' . $old_image)) {
-                @unlink('../' . $old_image);
+            if ($old_image && file_exists(BASE_PATH . $old_image)) {
+                @unlink(BASE_PATH . $old_image);
             }
         }
 
@@ -77,10 +78,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        header("Location: ../admin/posts.php?msg=Post+updated+successfully");
+        header("Location: " . BASE_URL . "admin/posts.php?msg=Post+updated+successfully");
         exit();
     } else {
-        header("Location: ../admin/edit-post.php?id=$post_id&error=Failed+to+update+post");
+        header("Location: " . BASE_URL . "admin/edit-post.php?id=$post_id&error=Failed+to+update+post");
         exit();
     }
 }

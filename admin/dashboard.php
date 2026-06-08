@@ -1,9 +1,9 @@
 <?php
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
-include "../config.php";
-include "../include/admin_nav_sidebar.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/admin_nav_sidebar.php';
 
 // ── 1. Total counts ──────────────────────────────────────────────────────────
 $total_users      = total($conn, 'users')['total'];
@@ -208,6 +208,7 @@ function time_ago($ts) {
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Blog Fusion – Admin Dashboard</title>
@@ -238,7 +239,7 @@ function time_ago($ts) {
             },
         }
     </script>
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 
@@ -357,7 +358,7 @@ function time_ago($ts) {
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-2">
-                                            <?= author_avatar($post['author_name'], '../'.$post['profile_image'], 6) ?>
+                                            <?= author_avatar($post['author_name'], BASE_URL.$post['profile_image'], 6) ?>
                                             <span class="text-sm"><?= htmlspecialchars($post['author_name'] ?? 'Unknown') ?></span>
                                         </div>
                                     </td>
@@ -512,7 +513,7 @@ function time_ago($ts) {
     </main>
 </div>
 
-<script src="../assets/js/admin.js"></script>
+<script src="<?= BASE_URL ?>assets/js/admin.js"></script>
 
 <!-- ─── Chart.js Traffic Chart ─── -->
 <script>

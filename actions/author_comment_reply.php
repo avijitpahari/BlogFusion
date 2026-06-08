@@ -1,9 +1,10 @@
 <?php
 // actions/author_comment_reply.php
 // Handles AJAX POST: author replies to a comment
-include '../include/session.php';
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include '../include/db.php';
+include BASE_PATH . 'include/db.php';
 
 header('Content-Type: application/json');
 
@@ -62,7 +63,7 @@ if (mysqli_query($conn, $sql)) {
             'parent_id' => $parent_id,
             'user_id' => $user_id,
             'name' => htmlspecialchars($user_row['name'] ?? 'You'),
-            'profile_image' => '../' . ($user_row['profile_image'] ?? 'upload/profile-images/default.png'),
+            'profile_image' => BASE_URL . ($user_row['profile_image'] ?? 'upload/profile-images/default.png'),
             'created_at' => date('M d, Y · H:i'),
         ]
     ]);

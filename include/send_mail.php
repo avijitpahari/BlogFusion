@@ -1,14 +1,15 @@
 <?php
+require_once dirname(__DIR__) . '/config.php';
 //Import PHPMailer classes into the global namespace
 //These must be at the top of your script, not inside a function
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
-$env = parse_ini_file(__DIR__ . "/../.env");
+$env = parse_ini_file(BASE_PATH . ".env");
 
-require_once __DIR__ . '/../vendor/PHPMailer/src/Exception.php';
-require_once __DIR__ . '/../vendor/PHPMailer/src/PHPMailer.php';
-require_once __DIR__ . '/../vendor/PHPMailer/src/SMTP.php';
+require_once BASE_PATH . 'vendor/PHPMailer/src/Exception.php';
+require_once BASE_PATH . 'vendor/PHPMailer/src/PHPMailer.php';
+require_once BASE_PATH . 'vendor/PHPMailer/src/SMTP.php';
 //Create an instance; passing `true` enables exceptions
 $mail = new PHPMailer(true);
 
@@ -42,7 +43,7 @@ function send_mail($email, $name, $otp)
     //$mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
     //$mail->addAttachment('../upload/profile-images/1773820904_Screenshot 2025-11-07 135403.png', 'new.jpg');    //Optional name
     $mail->addEmbeddedImage(
-        __DIR__ . '/../upload/site_image/logo2.png', // image path
+        BASE_PATH . 'upload/site_image/logo2.png', // image path
         'logoimg' // cid name
     );
     //Content
@@ -146,7 +147,7 @@ function send_password_reset_mail($email, $name, $otp)
     global $mail;
     $mail->addAddress($email);
     $mail->addEmbeddedImage(
-        __DIR__ . '/../upload/site_image/logo2.png',
+        BASE_PATH . 'upload/site_image/logo2.png',
         'logoimg'
     );
     $mail->isHTML(true);

@@ -1,7 +1,9 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
-include "../include/author_nav_sidebar.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/author_nav_sidebar.php';
 
 $table = 'comments';
 $limit = 6;
@@ -24,7 +26,7 @@ $total_result1 = mysqli_query($conn, $total_post);
 $total_posts = mysqli_fetch_assoc($total_result1);
 $total_post1 = $total_posts['total_posts'];
 
-include "../include/pagination.php";
+include BASE_PATH . 'include/pagination.php';
 $pagination = paginate($data, $total_records, $page, $offset, $limit);
 $data24        = $pagination['data'];
 $total_pages   = $pagination['total_pages'];
@@ -36,6 +38,7 @@ $offset        = $pagination['offset'];
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Comments Management - Luminous</title>
@@ -162,7 +165,7 @@ $offset        = $pagination['offset'];
                                 <td class="px-4 sm:px-8 py-4 rounded-l-[2rem]">
                                     <div class="flex items-center gap-3 min-w-[140px]">
                                         <img class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl object-cover shrink-0"
-                                            src="../<?= $data01['profile_image'] ?>" alt="avatar">
+                                            src="<?= BASE_URL . $data01['profile_image'] ?>" alt="avatar">
                                         <div class="min-w-0">
                                             <p class="font-bold text-on-surface truncate"><?= htmlspecialchars($data01['name']) ?></p>
                                             <p class="text-xs text-zinc-500 truncate max-w-[100px] sm:max-w-none"><?= htmlspecialchars($data01['email']) ?></p>
@@ -190,7 +193,7 @@ $offset        = $pagination['offset'];
                                         <button class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center" title="Reply">
                                             <span class="material-symbols-outlined text-base sm:text-lg">reply</span>
                                         </button>
-                                        <button onclick="window.location.href='../actions/author.php?id=<?=$id?>&btn=comment'"
+                                        <button onclick="window.location.href='<?= BASE_URL ?>actions/author.php?id=<?=$id?>&btn=comment'"
                                             class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-tertiary/10 text-tertiary hover:bg-tertiary hover:text-white transition-all flex items-center justify-center" title="Delete">
                                             <span class="material-symbols-outlined text-base sm:text-lg">delete</span>
                                         </button>

@@ -1,8 +1,10 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
-include "../include/functions.php";
-include "../include/author_nav_sidebar.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/functions.php';
+include BASE_PATH . 'include/author_nav_sidebar.php';
 $id = $_SESSION['user_id'];
 $sql = "SELECT * FROM category_requests where author_id=$id ORDER BY id DESC";
 $run = mysqli_query($conn, $sql);
@@ -24,6 +26,7 @@ if (isset($_SESSION['message'])) {
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Category Requests | Luminous Editor</title>
@@ -225,7 +228,7 @@ if (isset($_SESSION['message'])) {
                             <h3 class="text-xl font-bold tracking-tight text-gray-900">Request New Category</h3>
                             <p class="text-[#7b7487] text-sm mt-2">Propose a specialized taxonomy. The editorial board will review and notify you upon decision.</p>
                         </div>
-                        <form class="space-y-6 max-w-xl mx-auto" id="categoryForm" method="POST" action="../actions/category-request-action.php">
+                        <form class="space-y-6 max-w-xl mx-auto" id="categoryForm" method="POST" action="<?= BASE_URL ?>actions/category-request-action.php">
                             <div class="space-y-2">
                                 <label class="block text-[10px] font-bold text-primary uppercase tracking-widest ml-1">Category Name</label>
                                 <input name="category_name" id="categoryNameInput" required oninput="generateSlugPreview(this.value)"

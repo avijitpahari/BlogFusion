@@ -1,10 +1,32 @@
 <?php
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
-include "../include/author_nav_sidebar.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/author_nav_sidebar.php';
 
 $id = $_SESSION['user_id'];
+
+/* ── Time Range Filter ───────────────────────────────────── */
+$range = $_GET['range'] ?? 'all';
+$valid_ranges = ['24h', '7d', '30d', 'all'];
+if (!in_array($range, $valid_ranges)) {
+    $range = 'all';
+}
+
+$date_filter = "";
+if ($range === '24h') {
+    $date_filter = " AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)";
+} elseif ($range === '7d') {
+    $date_filter = " AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+} elseif ($range === '30d') {
+    $date_filter = " AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+}
+
+$posts_date_filter = $date_filter;
+$comments_date_filter_sub = str_replace('created_at', 'c.created_at', $date_filter);
+$reactions_date_filter_sub = str_replace('created_at', 'r.created_at', $date_filter);
+$share_date_filter_sub = str_replace('created_at', 's.created_at', $date_filter);
 
 /* ── Helper ─────────────────────────────────────────────── */
 function fmt_num($n): string
@@ -32,7 +54,7 @@ $row = mysqli_fetch_assoc(mysqli_query($conn,
         SUM(views)                              AS total_views,
         SUM(status='published')                 AS published_count,
         SUM(status='draft')                     AS draft_count
-     FROM posts WHERE author_id = $id"
+     FROM posts WHERE author_id = $id" . $posts_date_filter
 ));
 $total_posts     = (int)($row['total_posts'] ?? 0);
 $total_views     = (int)($row['total_views'] ?? 0);
@@ -42,19 +64,19 @@ $draft_count     = (int)($row['draft_count'] ?? 0);
 $total_reactions = (int)(mysqli_fetch_assoc(mysqli_query($conn,
     "SELECT COUNT(*) AS t FROM reactions r
      INNER JOIN posts p ON r.post_id = p.id
-     WHERE p.author_id = $id"
+     WHERE p.author_id = $id" . str_replace('created_at', 'r.created_at', $date_filter)
 ))['t'] ?? 0);
 
 $total_comments = (int)(mysqli_fetch_assoc(mysqli_query($conn,
     "SELECT COUNT(*) AS t FROM comments c
      INNER JOIN posts p ON c.post_id = p.id
-     WHERE p.author_id = $id"
+     WHERE p.author_id = $id" . str_replace('created_at', 'c.created_at', $date_filter)
 ))['t'] ?? 0);
 
 $total_shares = (int)(mysqli_fetch_assoc(mysqli_query($conn,
     "SELECT COALESCE(SUM(s.share), 0) AS t FROM share s
      INNER JOIN posts p ON s.post_id = p.id
-     WHERE p.author_id = $id"
+     WHERE p.author_id = $id" . str_replace('created_at', 's.created_at', $date_filter)
 ))['t'] ?? 0);
 
 $avg_views    = $total_posts > 0 ? round($total_views    / $total_posts, 1) : 0;
@@ -63,15 +85,11 @@ $avg_reactions = $total_posts > 0 ? round($total_reactions / $total_posts, 1) : 
 /* ── Top 5 Posts by Views ────────────────────────────────── */
 $top_posts_res = mysqli_query($conn,
     "SELECT p.id, p.title, p.slug, p.image, p.views, p.created_at,
-            COUNT(DISTINCT c.id)  AS comment_count,
-            COUNT(DISTINCT r.id)  AS reaction_count,
-            COALESCE(SUM(s.share),0) AS share_count
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id" . $comments_date_filter_sub . ") AS comment_count,
+            (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id" . $reactions_date_filter_sub . ") AS reaction_count,
+            (SELECT COALESCE(SUM(s.share),0) FROM share s WHERE s.post_id = p.id" . $share_date_filter_sub . ") AS share_count
      FROM posts p
-     LEFT JOIN comments  c ON c.post_id = p.id
-     LEFT JOIN reactions r ON r.post_id = p.id
-     LEFT JOIN share     s ON s.post_id = p.id
-     WHERE p.author_id = $id AND p.status = 'published'
-     GROUP BY p.id, p.title, p.slug, p.image, p.views, p.created_at
+     WHERE p.author_id = $id AND p.status = 'published'" . $posts_date_filter . "
      ORDER BY p.views DESC
      LIMIT 5"
 );
@@ -82,7 +100,7 @@ $reaction_res = mysqli_query($conn,
     "SELECT r.emoji, COUNT(*) AS cnt
      FROM reactions r
      INNER JOIN posts p ON r.post_id = p.id
-     WHERE p.author_id = $id
+     WHERE p.author_id = $id" . str_replace('created_at', 'r.created_at', $date_filter) . "
      GROUP BY r.emoji"
 );
 $emoji_mapping = [
@@ -107,7 +125,7 @@ $cat_res = mysqli_query($conn,
     "SELECT cat.name, COUNT(*) AS cnt
      FROM posts p
      LEFT JOIN categories cat ON cat.id = p.category_id
-     WHERE p.author_id = $id
+     WHERE p.author_id = $id" . $posts_date_filter . "
      GROUP BY cat.id, cat.name
      ORDER BY cnt DESC"
 );
@@ -120,14 +138,63 @@ if ($cat_res) {
     }
 }
 
-function fill_6m_trend($conn, $query) {
-    $trend = [];
-    for ($i = 5; $i >= 0; $i--) {
-        $time = strtotime("-$i months");
-        $ym = date('Y-m', $time);
-        $label = date('M Y', $time);
-        $trend[$ym] = ['label' => $label, 'total' => 0];
+function get_author_trend($conn, $author_id, $table, $col = 'created_at', $range = 'all', $sum_views = false) {
+    $val_col = $sum_views ? "SUM(views)" : "COUNT(*)";
+    $author_filter = $table === 'posts' ? "author_id = $author_id" : "post_id IN (SELECT id FROM posts WHERE author_id = $author_id)";
+    
+    if ($range === '24h') {
+        $trend = [];
+        for ($i = 23; $i >= 0; $i--) {
+            $time = strtotime("-$i hours");
+            $ym = date('Y-m-d H:00', $time);
+            $label = date('H:00', $time);
+            $trend[$ym] = ['label' => $label, 'total' => 0];
+        }
+        $query = "SELECT DATE_FORMAT($col, '%Y-%m-%d %H:00') AS ym, $val_col AS total 
+                  FROM $table 
+                  WHERE $author_filter AND $col >= DATE_SUB(NOW(), INTERVAL 24 HOUR) 
+                  GROUP BY ym";
+    } elseif ($range === '7d') {
+        $trend = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $time = strtotime("-$i days");
+            $ym = date('Y-m-d', $time);
+            $label = date('D M j', $time);
+            $trend[$ym] = ['label' => $label, 'total' => 0];
+        }
+        $query = "SELECT DATE_FORMAT($col, '%Y-%m-%d') AS ym, $val_col AS total 
+                  FROM $table 
+                  WHERE $author_filter AND $col >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
+                  GROUP BY ym";
+    } elseif ($range === '30d') {
+        $trend = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $time = strtotime("-$i days");
+            $ym = date('Y-m-d', $time);
+            $label = date('M j', $time);
+            $trend[$ym] = ['label' => $label, 'total' => 0];
+        }
+        $query = "SELECT DATE_FORMAT($col, '%Y-%m-%d') AS ym, $val_col AS total 
+                  FROM $table 
+                  WHERE $author_filter AND $col >= DATE_SUB(NOW(), INTERVAL 30 DAY) 
+                  GROUP BY ym";
+    } else {
+        $trend = [];
+        $current_year = date('Y');
+        $current_month = date('m');
+        for ($i = 5; $i >= 0; $i--) {
+            $time = mktime(0, 0, 0, $current_month - $i, 1, $current_year);
+            $ym = date('Y-m', $time);
+            $label = date('M Y', $time);
+            $trend[$ym] = ['label' => $label, 'total' => 0];
+        }
+        $query = "SELECT DATE_FORMAT($col, '%Y-%m') AS ym, $val_col AS total 
+                  FROM $table 
+                  WHERE $author_filter AND $col >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 5 MONTH), '%Y-%m-01') 
+                  GROUP BY ym
+                  ORDER BY ym ASC";
     }
+    
     $res = mysqli_query($conn, $query);
     if ($res) {
         while ($r = mysqli_fetch_assoc($res)) {
@@ -137,6 +204,7 @@ function fill_6m_trend($conn, $query) {
             }
         }
     }
+    
     $labels = [];
     $data = [];
     foreach ($trend as $val) {
@@ -146,23 +214,13 @@ function fill_6m_trend($conn, $query) {
     return ['labels' => $labels, 'data' => $data];
 }
 
-/* ── Monthly Post Output (last 6 months) ─────────────────── */
-$trend_monthly = fill_6m_trend($conn,
-    "SELECT DATE_FORMAT(created_at, '%Y-%m') AS ym, COUNT(*) AS total
-     FROM posts
-     WHERE author_id = $id
-       AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-     GROUP BY ym");
+/* ── Post Output trend based on range ─────────────────── */
+$trend_monthly = get_author_trend($conn, $id, 'posts', 'created_at', $range);
 $month_labels = $trend_monthly['labels'];
 $month_counts = $trend_monthly['data'];
 
-/* ── Views Per Month (posts grouped by publish month) ────── */
-$trend_views = fill_6m_trend($conn,
-    "SELECT DATE_FORMAT(created_at, '%Y-%m') AS ym, SUM(views) AS total
-     FROM posts
-     WHERE author_id = $id AND status = 'published'
-       AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-     GROUP BY ym");
+/* ── Views trend based on range ────── */
+$trend_views = get_author_trend($conn, $id, 'posts', 'created_at', $range, true);
 $views_labels = $trend_views['labels'];
 $views_data   = $trend_views['data'];
 
@@ -173,7 +231,7 @@ $recent_comments_res = mysqli_query($conn,
      FROM comments c
      INNER JOIN posts p  ON c.post_id = p.id
      INNER JOIN users u  ON c.user_id = u.id
-     WHERE p.author_id = $id
+     WHERE p.author_id = $id" . str_replace('created_at', 'c.created_at', $date_filter) . "
      ORDER BY c.created_at DESC
      LIMIT 5"
 );
@@ -183,6 +241,7 @@ $recent_comments = $recent_comments_res ? mysqli_fetch_all($recent_comments_res,
 <html lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Analytics | Blog Fusion</title>
@@ -265,10 +324,15 @@ $recent_comments = $recent_comments_res ? mysqli_fetch_all($recent_comments_res,
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-on-surface">Analytics</h1>
                 <p class="text-on-surface-variant text-sm mt-1">A complete view of your content performance.</p>
             </div>
-            <div class="flex items-center gap-2 text-xs text-on-surface-variant bg-surface-container px-4 py-2 rounded-xl border border-outline-variant/20">
+            <form method="GET" class="flex items-center gap-2 text-xs text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-xl border border-outline-variant/20">
                 <span class="material-symbols-outlined text-base">calendar_today</span>
-                <span>All time</span>
-            </div>
+                <select name="range" onchange="this.form.submit()" class="bg-transparent border-none text-xs text-on-surface-variant focus:ring-0 cursor-pointer p-0 pr-6 font-medium">
+                    <option value="24h" class="dark:bg-slate-900 bg-white" <?= $range === '24h' ? 'selected' : '' ?>>Last 24 Hours</option>
+                    <option value="7d" class="dark:bg-slate-900 bg-white" <?= $range === '7d' ? 'selected' : '' ?>>Last 7 Days</option>
+                    <option value="30d" class="dark:bg-slate-900 bg-white" <?= $range === '30d' ? 'selected' : '' ?>>Last 30 Days</option>
+                    <option value="all" class="dark:bg-slate-900 bg-white" <?= $range === 'all' ? 'selected' : '' ?>>All Time</option>
+                </select>
+            </form>
         </header>
 
         <!-- ── Stat Cards Row ──────────────────────────────────────────── -->
@@ -364,7 +428,13 @@ $recent_comments = $recent_comments_res ? mysqli_fetch_all($recent_comments_res,
                 <div class="flex items-center justify-between mb-5">
                     <div>
                         <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Performance</p>
-                        <h2 class="text-lg font-bold text-on-surface">Views by Publish Month</h2>
+                        <h2 class="text-lg font-bold text-on-surface">
+                            <?php
+                            if ($range === '24h') echo 'Views by Publish Hour';
+                            elseif ($range === '7d' || $range === '30d') echo 'Views by Publish Day';
+                            else echo 'Views by Publish Month';
+                            ?>
+                        </h2>
                     </div>
                     <div class="w-9 h-9 rounded-xl bg-primary-fixed/30 flex items-center justify-center text-primary">
                         <span class="material-symbols-outlined text-lg">trending_up</span>
@@ -376,7 +446,14 @@ $recent_comments = $recent_comments_res ? mysqli_fetch_all($recent_comments_res,
                 <?php if (empty($views_data)): ?>
                     <div class="flex flex-col items-center justify-center py-8 text-center">
                         <span class="material-symbols-outlined text-3xl text-on-surface-variant mb-2">bar_chart</span>
-                        <p class="text-sm text-on-surface-variant">No published posts yet — publish a post to see your views trend.</p>
+                        <p class="text-sm text-on-surface-variant">
+                            <?php
+                            if ($range === '24h') echo 'No published posts found in the last 24 hours.';
+                            elseif ($range === '7d') echo 'No published posts found in the last 7 days.';
+                            elseif ($range === '30d') echo 'No published posts found in the last 30 days.';
+                            else echo 'No published posts yet — publish a post to see your views trend.';
+                            ?>
+                        </p>
                     </div>
                 <?php endif; ?>
             </div>
@@ -424,7 +501,13 @@ $recent_comments = $recent_comments_res ? mysqli_fetch_all($recent_comments_res,
                 <div class="flex items-center justify-between mb-5">
                     <div>
                         <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Publishing</p>
-                        <h2 class="text-lg font-bold text-on-surface">Posts Per Month</h2>
+                        <h2 class="text-lg font-bold text-on-surface">
+                            <?php
+                            if ($range === '24h') echo 'Posts Per Hour';
+                            elseif ($range === '7d' || $range === '30d') echo 'Posts Per Day';
+                            else echo 'Posts Per Month';
+                            ?>
+                        </h2>
                     </div>
                     <div class="w-9 h-9 rounded-xl bg-secondary-fixed/30 flex items-center justify-center text-secondary">
                         <span class="material-symbols-outlined text-lg">calendar_month</span>
@@ -435,7 +518,14 @@ $recent_comments = $recent_comments_res ? mysqli_fetch_all($recent_comments_res,
                 </div>
                 <?php if (empty($month_counts)): ?>
                     <div class="flex flex-col items-center justify-center py-8 text-center">
-                        <p class="text-sm text-on-surface-variant">No posts found in the last 6 months.</p>
+                        <p class="text-sm text-on-surface-variant">
+                            <?php
+                            if ($range === '24h') echo 'No posts found in the last 24 hours.';
+                            elseif ($range === '7d') echo 'No posts found in the last 7 days.';
+                            elseif ($range === '30d') echo 'No posts found in the last 30 days.';
+                            else echo 'No posts found in the last 6 months.';
+                            ?>
+                        </p>
                     </div>
                 <?php endif; ?>
             </div>
@@ -525,7 +615,7 @@ $recent_comments = $recent_comments_res ? mysqli_fetch_all($recent_comments_res,
                                     $rank_badges = ['🥇', '🥈', '🥉', '#4', '#5'];
                                     $badge = $rank_badges[$rank] ?? ('#' . ($rank + 1));
                                     $post_title = htmlspecialchars($post['title']);
-                                    $post_img   = '../' . $post['image'];
+                                    $post_img   = BASE_URL . $post['image'];
                                 ?>
                                     <tr class="border-t border-outline-variant/10 hover:bg-surface-container-low transition-colors group">
                                         <td class="py-4 px-5">
@@ -586,7 +676,7 @@ $recent_comments = $recent_comments_res ? mysqli_fetch_all($recent_comments_res,
                     <div class="flex flex-col divide-y divide-outline-variant/10">
                         <?php foreach ($recent_comments as $c): ?>
                             <div class="flex gap-3 px-5 py-4">
-                                <img src="../<?= htmlspecialchars($c['actor_img']) ?>"
+                                <img src="<?= BASE_URL ?><?= htmlspecialchars($c['actor_img']) ?>"
                                      alt="<?= htmlspecialchars($c['actor_name']) ?>"
                                      class="w-9 h-9 rounded-xl object-cover flex-shrink-0 bg-surface-container" />
                                 <div class="min-w-0 flex-1">

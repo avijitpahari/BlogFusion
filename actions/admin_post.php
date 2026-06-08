@@ -1,8 +1,9 @@
 <?php
-include '../include/session.php';
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include '../include/db.php';
-include '../include/functions.php';
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $author_id   = (int)$_SESSION['user_id'];
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($result) {
         if ($upload_ok) {
-            move_uploaded_file($file['tmp_name'], '../' . $path);
+            move_uploaded_file($file['tmp_name'], BASE_PATH . $path);
         }
 
         // Notify all users if post is published
@@ -54,10 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        header("Location: ../admin/posts.php?msg=Post+created+successfully");
+        header("Location: " . BASE_URL . "admin/posts.php?msg=Post+created+successfully");
         exit();
     } else {
-        header("Location: ../admin/edit-post.php?msg=Failed+to+create+post");
+        header("Location: " . BASE_URL . "admin/edit-post.php?msg=Failed+to+create+post");
         exit();
     }
 }

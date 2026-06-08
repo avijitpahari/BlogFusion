@@ -1,8 +1,9 @@
 <?php
-include '../include/session.php';
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include '../include/db.php';
-include '../include/functions.php';
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/functions.php';
 global $conn;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -19,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $check_res = mysqli_query($conn, $check_query);
     if (!$check_res || mysqli_num_rows($check_res) === 0) {
-        header("Location: ../author/my-post.php?msg=unauthorized");
+        header("Location: " . BASE_URL . "author/my-post.php?msg=unauthorized");
         exit();
     }
     
@@ -63,13 +64,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($result) {
         if ($upload_ok) {
-            move_uploaded_file($file['tmp_name'], '../' . $path);
-            if ($old_image && file_exists('../' . $old_image)) {
-                @unlink('../' . $old_image);
+            move_uploaded_file($file['tmp_name'], BASE_PATH . $path);
+            if ($old_image && file_exists(BASE_PATH . $old_image)) {
+                @unlink(BASE_PATH . $old_image);
             }
         } elseif ($delete_image) {
-            if ($old_image && file_exists('../' . $old_image)) {
-                @unlink('../' . $old_image);
+            if ($old_image && file_exists(BASE_PATH . $old_image)) {
+                @unlink(BASE_PATH . $old_image);
             }
         }
         
@@ -87,13 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         if ($is_admin) {
-            header("Location: ../admin/posts.php?msg=posted");
+            header("Location: " . BASE_URL . "admin/posts.php?msg=posted");
         } else {
-            header("Location: ../author/my-post.php?msg=posted");
+            header("Location: " . BASE_URL . "author/my-post.php?msg=posted");
         }
         exit();
     } else {
-        header("Location: ../author/edit-post.php?id=$post_id&msg=update_fail");
+        header("Location: " . BASE_URL . "author/edit-post.php?id=$post_id&msg=update_fail");
         exit();
     }
 }

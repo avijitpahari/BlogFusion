@@ -1,5 +1,6 @@
 <?php
-include "../include/db.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/db.php';
 global $conn;
 $user_id = $_SESSION['user_id'];
 
@@ -15,6 +16,7 @@ $image = $data['profile_image'];
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Blog Fusion - Navigation</title>
@@ -114,7 +116,7 @@ $image = $data['profile_image'];
                             </div>
                             <div class="relative">
                                 <img class="h-9 w-9 rounded-full object-cover border-2 border-transparent group-hover:border-primary transition-all"
-                                    src="<?php echo $image ? '../' . $image : '../upload/profile-images/default.png'; ?>">
+                                    src="<?php echo $image ? BASE_URL . $image : BASE_URL . 'upload/profile-images/default.png'; ?>">
 
                                 <div
                                     class="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white rounded-full">

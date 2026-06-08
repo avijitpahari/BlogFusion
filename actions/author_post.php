@@ -1,8 +1,9 @@
 <?php
-include '../include/session.php';
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include '../include/db.php';
-include '../include/functions.php';
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/functions.php';
 global $conn;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -39,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = mysqli_query($conn, $query);
     if ($result) {
         if ($upload_ok) {
-            move_uploaded_file($file['tmp_name'], '../' . $path);
+            move_uploaded_file($file['tmp_name'], BASE_PATH . $path);
         }
         
         // Notify all users if post is published
@@ -55,10 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        header("Location: ../author/my-post.php?msg=posted");
+        header("Location: " . BASE_URL . "author/my-post.php?msg=posted");
         exit();
     } else {
-        header("Location: ../author/edit-post.php?msg=post_fail");
+        header("Location: " . BASE_URL . "author/edit-post.php?msg=post_fail");
         exit();
     }
 }

@@ -1,8 +1,12 @@
-<?php include_once "../include/functions.php"; ?><!DOCTYPE html>
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include_once BASE_PATH . 'include/functions.php';
+?><!DOCTYPE html>
 
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -67,7 +71,7 @@
                     </div>
                     <!-- Form Section -->
 
-                    <form class="flex flex-col gap-y-4 p-6 md:p-8" action="../actions/login_signup.php" method="POST">
+                    <form class="flex flex-col gap-y-4 p-6 md:p-8" action="<?= BASE_URL ?>actions/login_signup.php" method="POST">
                         <!-- Email Field -->
                         <div class="flex flex-col w-full">
                             <label

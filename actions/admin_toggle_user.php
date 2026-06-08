@@ -3,9 +3,10 @@
  * actions/admin_toggle_user.php
  * AJAX: Toggle is_active status for a user. Admin only.
  */
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
+include BASE_PATH . 'include/db.php';
 
 header('Content-Type: application/json');
 

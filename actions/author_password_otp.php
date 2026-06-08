@@ -6,9 +6,10 @@
  *   2. verify_otp     – check OTP, return a short-lived verified token stored in session
  *   3. change_password – verify token, update password
  */
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
+include BASE_PATH . 'include/db.php';
 
 header('Content-Type: application/json');
 
@@ -46,7 +47,7 @@ if ($action === 'send_otp') {
 
     // Send email
     try {
-        include "../include/send_mail.php";
+        include BASE_PATH . 'include/send_mail.php';
         send_password_reset_mail($user['email'], $user['name'], $otp);
         $mail->send();
         echo json_encode(['success' => true, 'email' => substr($user['email'], 0, 3) . '***@' . explode('@', $user['email'])[1]]);

@@ -1,6 +1,7 @@
 <?php
+require_once dirname(__DIR__) . '/config.php';
 session_start();
-include "../include/db.php";
+include BASE_PATH . "include/db.php";
 global $conn;
 
 // =========  signup section  ==========
@@ -10,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['signup'])) {
     
     // Check if email OTP verification was completed for this email
     if (!isset($_SESSION['verified']) || $_SESSION['verified'] !== true || ($_SESSION['verified_email'] ?? '') !== $email) {
-        header("Location: ../pages/register.php?msg=verification_failed");
+        header("Location: " . BASE_URL . "pages/register.php?msg=verification_failed");
         exit();
     }
 
@@ -43,18 +44,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['signup'])) {
     $query = "SELECT id FROM users WHERE email='$email' LIMIT 1";
     $result = mysqli_query($conn, $query);
     if ($result && mysqli_num_rows($result) > 0) {
-        header("Location: ../pages/register.php?msg=exists");
+        header("Location: " . BASE_URL . "pages/register.php?msg=exists");
         exit();
     } else {
         $sql = "INSERT INTO users (name, email, password, role, profile_image) VALUES ('$name', '$email', '$password', '$role', '$path')";
         if (mysqli_query($conn, $sql)) {
             if ($upload_ok) {
-                move_uploaded_file($file['tmp_name'], '../' . $path);
+                move_uploaded_file($file['tmp_name'], BASE_PATH . $path);
             }
             // Clear verification markers from session
             unset($_SESSION['verified']);
             unset($_SESSION['verified_email']);
-            header("Location: ../pages/login.php?msg=registered");
+            header("Location: " . BASE_URL . "pages/login.php?msg=registered");
             exit();
         }
     }
@@ -74,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         if (password_verify($password, $data['password'])) {
             // Check if account is active
             if (isset($data['is_active']) && (int)$data['is_active'] === 0) {
-                header("Location: ../pages/login.php?msg=inactive");
+                header("Location: " . BASE_URL . "pages/login.php?msg=inactive");
                 exit;
             }
             if (session_status() === PHP_SESSION_NONE) {
@@ -87,19 +88,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
             $_SESSION['msg'] = 'login_success';
             
             if ($data['role'] == "user") {
-                header("Location: ../pages/home.php");
+                header("Location: " . BASE_URL . "pages/home.php");
             } elseif ($data['role'] == "author") {
-                header("Location: ../author/index.php");
+                header("Location: " . BASE_URL . "author/index.php");
             } elseif ($data['role'] == "admin") {
-                header("Location: ../admin/dashboard.php");
+                header("Location: " . BASE_URL . "admin/dashboard.php");
             }
             exit;
         } else {
-            header("Location: ../pages/login.php?msg=p_not_match");
+            header("Location: " . BASE_URL . "pages/login.php?msg=p_not_match");
             exit;
         }
     } else {
-        header("Location: ../pages/login.php?msg=u_not_find");
+        header("Location: " . BASE_URL . "pages/login.php?msg=u_not_find");
         exit;
     }
 }

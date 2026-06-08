@@ -1,10 +1,14 @@
-<?php session_start(); include_once "../include/functions.php"; ?>
+<?php session_start();
+require_once dirname(__DIR__) . '/config.php';
+include_once BASE_PATH . 'include/functions.php';
+?>
 
 <!DOCTYPE html>
 
 <html lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>Sign Up | Blog Fusion</title>
@@ -72,7 +76,7 @@
     </header>
     <!-- END: Header Section -->
     <!-- BEGIN: Signup Form -->
-    <form action="../actions/login_signup.php" class="p-8 space-y-6" data-purpose="signup-form" method="POST"
+    <form action="<?= BASE_URL ?>actions/login_signup.php" class="p-8 space-y-6" data-purpose="signup-form" method="POST"
       enctype="multipart/form-data">
       <!-- Full Name Field -->
       <div>
@@ -232,13 +236,13 @@
 
 
   <!-- BEGIN: Interactive Logic -->
-  <script src="../assets/js/register.js"></script>
+  <script src="<?= BASE_URL ?>assets/js/register.js"></script>
   <script>
     function user_exists() {
 
       let email = document.getElementById("email").value;
 
-      fetch("../include/user_exits.php", {
+      fetch("<?= BASE_URL ?>include/user_exits.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -272,7 +276,7 @@
 
       // show OTP field
       document.getElementById("otp_cointener").classList.remove("hidden");
-      fetch("../actions/send_otp.php", {
+      fetch("<?= BASE_URL ?>actions/send_otp.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -306,7 +310,7 @@
     function verifyOTP() {
       let otp = document.getElementById("otp").value;
 
-      fetch("../include/verify_otp.php", {
+      fetch("<?= BASE_URL ?>include/verify_otp.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

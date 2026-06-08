@@ -1,9 +1,10 @@
 <?php
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin(); // Enforce strict administrative privilege checks
-include "../include/db.php";
+include BASE_PATH . 'include/db.php';
 global $conn;
-include "../include/data_fetch.php";
+include BASE_PATH . 'include/data_fetch.php';
 
 // =========  user update section  ==========
 
@@ -42,9 +43,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['user-update'])) {
     $run = mysqli_query($conn, $sql);
     if ($run) {
         if ($upload_ok) {
-            move_uploaded_file($file['tmp_name'], '../' . $path);
-            if ($current_profile_image && $current_profile_image !== 'upload/profile-images/default.png' && file_exists('../' . $current_profile_image)) {
-                @unlink('../' . $current_profile_image);
+            move_uploaded_file($file['tmp_name'], BASE_PATH . $path);
+            if ($current_profile_image && $current_profile_image !== 'upload/profile-images/default.png' && file_exists(BASE_PATH . $current_profile_image)) {
+                @unlink(BASE_PATH . $current_profile_image);
             }
         }
         if ((string)$_SESSION['user_id'] === (string)$user_id) {
@@ -52,10 +53,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['user-update'])) {
             $_SESSION['role'] = $role;
         }
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        header("Location: ../admin/users.php?page=" . $page);
+        header("Location: " . BASE_URL . "admin/users.php?page=" . $page);
         exit();
     } else {
-        header("Location: ../admin/users.php?msg=update_fail");
+        header("Location: " . BASE_URL . "admin/users.php?msg=update_fail");
         exit();
     }
 }
@@ -89,16 +90,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['new_user'])) {
     $query = "SELECT id FROM users WHERE email='$email' LIMIT 1";
     $result = mysqli_query($conn, $query);
     if ($result && mysqli_num_rows($result) > 0) {
-        header("Location: ../admin/users.php?msg=email");
+        header("Location: " . BASE_URL . "admin/users.php?msg=email");
         exit();
     } else {
         $sql = "INSERT INTO users (name, email, password, role, profile_image) VALUES ('$name', '$email', '$password', '$role', '$path')";
         if (mysqli_query($conn, $sql)) {
             if ($upload_ok) {
-                move_uploaded_file($file['tmp_name'], '../' . $path);
+                move_uploaded_file($file['tmp_name'], BASE_PATH . $path);
             }
         } else {
-            header("Location: ../admin/users.php?msg=user_add_fail");
+            header("Location: " . BASE_URL . "admin/users.php?msg=user_add_fail");
             exit();
         }
     }
@@ -112,16 +113,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && $_GET['btn'] == 'user') {
     
     // Prevent admin deleting themselves
     if ((int)$_SESSION['user_id'] === $id) {
-        header("Location: ../admin/users.php?msg=delete_self_error");
+        header("Location: " . BASE_URL . "admin/users.php?msg=delete_self_error");
         exit();
     }
     
     $call = delete('users', $id);
     if ($call) {
-        header("Location: ../admin/users.php?msg=user_deleted");
+        header("Location: " . BASE_URL . "admin/users.php?msg=user_deleted");
         exit();
     } else {
-        header("Location: ../admin/users.php?msg=user_delete_fail");
+        header("Location: " . BASE_URL . "admin/users.php?msg=user_delete_fail");
         exit();
     }
 }
@@ -137,10 +138,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['category-edit'])) {
     $run = mysqli_query($conn, $sql);
     if ($run) {
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        header("Location: ../admin/categories.php?page=" . $page);
+        header("Location: " . BASE_URL . "admin/categories.php?page=" . $page);
         exit();
     } else {
-        header("Location: ../admin/categories.php?msg=update_fail");
+        header("Location: " . BASE_URL . "admin/categories.php?msg=update_fail");
         exit();
     }
 }
@@ -156,13 +157,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['category-add'])) {
     $result = mysqli_query($conn, $query);
     if ($result && mysqli_num_rows($result) > 0) {
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        header("Location: ../admin/categories.php?page=" . $page);
+        header("Location: " . BASE_URL . "admin/categories.php?page=" . $page);
         exit();
     } else {
         $sql = "INSERT INTO categories (name,slug) VALUES ('$name','$slug')";
         if (mysqli_query($conn, $sql)) {
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-            header("Location: ../admin/categories.php?page=" . $page);
+            header("Location: " . BASE_URL . "admin/categories.php?page=" . $page);
             exit();
         }
     }
@@ -194,7 +195,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['category_status_update
             }
         }
     }
-    header("Location: ../admin/categories.php");
+    header("Location: " . BASE_URL . "admin/categories.php");
     exit();
 }
 
@@ -204,10 +205,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && $_GET['btn'] == 'category') {
     $id = (int)$_GET['id'];
     $call = delete('categories', $id);
     if ($call) {
-        header("Location: ../admin/categories.php?msg=category_deleted");
+        header("Location: " . BASE_URL . "admin/categories.php?msg=category_deleted");
         exit();
     } else {
-        header("Location: ../admin/categories.php?msg=category_delete_fail");
+        header("Location: " . BASE_URL . "admin/categories.php?msg=category_delete_fail");
         exit();
     }
 }
@@ -222,8 +223,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && $_GET['btn'] == 'post') {
     if ($post_res && mysqli_num_rows($post_res) > 0) {
         $post_row = mysqli_fetch_assoc($post_res);
         $post_image = $post_row['image'];
-        if ($post_image && file_exists('../' . $post_image)) {
-            @unlink('../' . $post_image);
+        if ($post_image && file_exists(BASE_PATH . $post_image)) {
+            @unlink(BASE_PATH . $post_image);
         }
     }
     
@@ -242,10 +243,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && $_GET['btn'] == 'post') {
         exit();
     }
     if ($call) {
-        header("Location: ../admin/posts.php?msg=post_deleted");
+        header("Location: " . BASE_URL . "admin/posts.php?msg=post_deleted");
         exit();
     } else {
-        header("Location: ../admin/posts.php?msg=post_delete_fail");
+        header("Location: " . BASE_URL . "admin/posts.php?msg=post_delete_fail");
         exit();
     }
 }
@@ -259,10 +260,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && $_GET['btn'] == 'comment') {
     // Delete comment
     $call = delete('comments', $id);
     if ($call) {
-        header("Location: ../admin/comments.php?msg=comment_deleted");
+        header("Location: " . BASE_URL . "admin/comments.php?msg=comment_deleted");
         exit();
     } else {
-        header("Location: ../admin/comments.php?msg=comment_delete_fail");
+        header("Location: " . BASE_URL . "admin/comments.php?msg=comment_delete_fail");
         exit();
     }
 }

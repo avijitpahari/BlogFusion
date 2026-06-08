@@ -1,6 +1,8 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
+include BASE_PATH . 'include/db.php';
 
 // ---- AJAX ACTIONS FOR PASSWORD ----
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -31,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-include "../include/author_nav_sidebar.php";
+include BASE_PATH . 'include/author_nav_sidebar.php';
 global $data1;
 
 // Fetch published posts and total views (Reach)
@@ -113,6 +115,7 @@ if (!function_exists('formatReach')) {
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>User Profile | Luminous Editor</title>
@@ -238,7 +241,7 @@ if (!function_exists('formatReach')) {
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
-                <form class="space-y-5" enctype="multipart/form-data" action="../actions/author.php" method="POST">
+                <form class="space-y-5" enctype="multipart/form-data" action="<?= BASE_URL ?>actions/author.php" method="POST">
                     <div>
                         <label class="block text-sm font-bold text-on-surface-variant mb-2 ml-1" for="name">Name</label>
                         <input
@@ -501,7 +504,7 @@ if (!function_exists('formatReach')) {
                             class="w-40 h-40 md:w-48 md:h-48 rounded-full border-4 border-surface-container-lowest shadow-xl shadow-primary/10 overflow-hidden">
                             <img class="h-full w-full object-cover"
                                 data-alt="close-up of Alex Rivera smiling professionally against a clean studio background with soft natural lighting"
-                                src="../<?= $data1['profile_image'] ?>" />
+                                src="<?= BASE_URL . $data1['profile_image'] ?>" />
                         </div>
                         <div
                             class="absolute bottom-2 right-2 bg-primary text-white w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-4 border-surface-container-low">
@@ -650,7 +653,7 @@ if (!function_exists('formatReach')) {
             let image = "<?= $data1['profile_image'] ?>";
             edit_name.value = "<?= $data1['name'] ?>";
             id.value = <?= $data1['id'] ?>;
-            image_preview.src = '../' + image;
+            image_preview.src = '<?= BASE_URL ?>' + image;
             document.getElementById('old-image').value = image;
             placeholder.classList.add('hidden');
             previewContainer.classList.remove('hidden');
@@ -771,7 +774,7 @@ if (!function_exists('formatReach')) {
             fd.append('action', 'send_otp');
             fd.append('old_password', oldPwd);
             try {
-                const res  = await fetch('../actions/author_password_otp.php', { method: 'POST', body: fd });
+                const res  = await fetch('<?= BASE_URL ?>actions/author_password_otp.php', { method: 'POST', body: fd });
                 const json = await res.json();
                 if (json.success) {
                     document.getElementById('pwd-otp-email').textContent = json.email;
@@ -790,7 +793,7 @@ if (!function_exists('formatReach')) {
             fd.append('action', 'verify_otp');
             fd.append('otp', otp);
             try {
-                const res  = await fetch('../actions/author_password_otp.php', { method: 'POST', body: fd });
+                const res  = await fetch('<?= BASE_URL ?>actions/author_password_otp.php', { method: 'POST', body: fd });
                 const json = await res.json();
                 if (json.success) {
                     pwdGoToStep(3);
@@ -814,7 +817,7 @@ if (!function_exists('formatReach')) {
             fd.append('new_password', newPwd);
             fd.append('confirm_password', confirmPwd);
             try {
-                const res  = await fetch('../actions/author_password_otp.php', { method: 'POST', body: fd });
+                const res  = await fetch('<?= BASE_URL ?>actions/author_password_otp.php', { method: 'POST', body: fd });
                 const json = await res.json();
                 if (json.success) {
                     closePwdModal();
@@ -833,7 +836,7 @@ if (!function_exists('formatReach')) {
             fd.append('action', 'send_reset_otp');
             fd.append('email', email);
             try {
-                const res  = await fetch('../actions/author_forgot_password.php', { method: 'POST', body: fd });
+                const res  = await fetch('<?= BASE_URL ?>actions/author_forgot_password.php', { method: 'POST', body: fd });
                 const json = await res.json();
                 if (json.success) {
                     document.getElementById('forgot-otp-email').textContent = json.email;
@@ -873,7 +876,7 @@ if (!function_exists('formatReach')) {
             fd1.append('otp', otp);
             
             try {
-                const res1 = await fetch('../actions/author_forgot_password.php', { method: 'POST', body: fd1 });
+                const res1 = await fetch('<?= BASE_URL ?>actions/author_forgot_password.php', { method: 'POST', body: fd1 });
                 const json1 = await res1.json();
                 if (!json1.success) {
                     document.querySelectorAll('.forgot-otp-digit').forEach(b => b.classList.add('border-red-400'));
@@ -888,7 +891,7 @@ if (!function_exists('formatReach')) {
                 fd2.append('new_password', newPwd);
                 fd2.append('confirm_password', confirmPwd);
                 
-                const res2 = await fetch('../actions/author_forgot_password.php', { method: 'POST', body: fd2 });
+                const res2 = await fetch('<?= BASE_URL ?>actions/author_forgot_password.php', { method: 'POST', body: fd2 });
                 const json2 = await res2.json();
                 if (json2.success) {
                     closePwdModal();

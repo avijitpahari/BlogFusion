@@ -1,10 +1,10 @@
 <?php
-include "include/session.php";
+require_once __DIR__ . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireUser();
-include "include/data_fetch.php";
-include "include/db.php";
-include_once "include/functions.php";
-include "config.php";
+include BASE_PATH . 'include/data_fetch.php';
+include BASE_PATH . 'include/db.php';
+include_once BASE_PATH . 'include/functions.php';
 
 global $conn;
 
@@ -39,6 +39,7 @@ $activeLabel = $searchQuery !== '' ? 'Search results for "' . escape_html($searc
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title><?php echo escape_html($siteName); ?> | Insights into Tech, Programming &amp; Business</title>

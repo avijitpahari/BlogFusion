@@ -1,10 +1,10 @@
 <?php
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireUser();
-include "../config.php";
-include "../include/db.php";
-include "../include/data_fetch.php";
-include_once "../include/functions.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/data_fetch.php';
+include_once BASE_PATH . 'include/functions.php';
 
 global $conn;
 
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $_SESSION['reset_otp_time'] = time();
         $_SESSION['reset_otp_email'] = $email;
         
-        include_once "../include/send_mail.php";
+        include_once BASE_PATH . 'include/send_mail.php';
         
         $mail_sent = false;
         try {
@@ -128,7 +128,7 @@ $data        = mysqli_fetch_assoc($user_result);
 $user_name    = htmlspecialchars($data['name'] ?? 'User');
 $user_email   = htmlspecialchars($data['email'] ?? '');
 $user_role    = ucfirst(htmlspecialchars($data['role'] ?? 'reader'));
-$user_image   = !empty($data['profile_image']) ? '../' . $data['profile_image'] : null;
+$user_image   = !empty($data['profile_image']) ? BASE_URL . $data['profile_image'] : null;
 $user_initial = strtoupper(substr($data['name'] ?? 'U', 0, 2));
 $joined_date  = date('M Y', strtotime($data['created_at'] ?? 'now'));
 $first_name   = explode(' ', trim($data['name'] ?? 'User'))[0];
@@ -223,6 +223,7 @@ if ($notif_res) {
 <html lang="en" class="light">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BlogFusion — User Panel</title>
@@ -539,10 +540,7 @@ if ($notif_res) {
         <aside id="sidebar" class="w-64 bg-surface-container-low shrink-0 fixed top-0 left-0 h-screen flex flex-col z-40 transition-transform duration-300 -translate-x-full lg:translate-x-0">
             <div class="px-6 py-5 border-b border-outline-variant/20">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl stat-gradient flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white text-base ms-filled">edit_note</span>
-                    </div>
-                    <span class="text-lg font-black tracking-tight text-on-surface">Blog<span class="text-primary">Fusion</span></span>
+                    <img src="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo1.png" alt="BlogFusion" class="h-8 object-contain" />
                 </div>
                 <div class="text-[11px] text-on-surface-variant mt-1 font-medium">User Panel</div>
             </div>
@@ -779,7 +777,7 @@ if ($notif_res) {
                         </div>
                     </div>
                     <div class="max-w-2xl bg-surface-container-lowest rounded-3xl p-6 md:p-8">
-                        <form method="POST" action="../actions/author.php" enctype="multipart/form-data">
+                        <form method="POST" action="<?= BASE_URL ?>actions/author.php" enctype="multipart/form-data">
                             <input type="hidden" name="action" value="update_profile" />
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                                 <div class="space-y-1.5">
@@ -1104,7 +1102,7 @@ if ($notif_res) {
 
         window.onload = async () => {
             try {
-                const res  = await fetch('../include/user_api.php');
+                const res  = await fetch('<?= BASE_URL ?>include/user_api.php');
                 const json = await res.json();
                 BLOGS = json.blogs || [];
             } catch(e) {
@@ -1239,10 +1237,10 @@ if ($notif_res) {
                     <h3 class="font-black text-sm md:text-base leading-snug text-on-surface mb-2 line-clamp-2">${escapeHtml(b.title)}</h3>
                     <div class="flex items-center justify-between text-xs text-on-surface-variant mb-2">
                       <div class="flex items-center gap-2 truncate pr-2">
-                        <img src="../${b.author_image || 'upload/profile-images/default.png'}" 
+                        <img src="<?= BASE_URL ?>${b.author_image || 'upload/profile-images/default.png'}" 
                              alt="${escapeHtml(b.author)}" 
                              class="w-6 h-6 rounded-full object-cover shrink-0" 
-                             onerror="this.src='../upload/profile-images/default.png'" />
+                             onerror="this.src='<?= BASE_URL ?>upload/profile-images/default.png'" />
                         <span class="font-semibold truncate">${escapeHtml(b.author)}</span>
                       </div>
                       <span class="shrink-0 font-medium">${b.date}</span>
@@ -1369,7 +1367,7 @@ if ($notif_res) {
 
         // ─── OPEN BLOG (redirect to single-post) ─────
         function openBlog(id) {
-            window.location.href = "../redirect-post.php?id=" + id;
+            window.location.href = "<?= BASE_URL ?>redirect-post.php?id=" + id;
         }
 
         function closeBlogView() {
@@ -1846,7 +1844,7 @@ if ($notif_res) {
 
         function logout() {
             showToast('Logging out...');
-            window.location.href = '../actions/logout.php';
+            window.location.href = '<?= BASE_URL ?>actions/logout.php';
         }
 
         // ─── TAG STRIP SCROLL ─────────────────────────

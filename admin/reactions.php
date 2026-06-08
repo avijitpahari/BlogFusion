@@ -1,8 +1,9 @@
 <?php
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
-include "../include/admin_nav_sidebar.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/admin_nav_sidebar.php';
 
 /* ── Helper ─────────────────────────────────────────────── */
 function fmt($n): string {
@@ -208,16 +209,19 @@ if ($range === '24h') {
     }
 } else {
     $trend = [];
+    $current_year = date('Y');
+    $current_month = date('m');
     for ($i = 5; $i >= 0; $i--) {
-        $time = strtotime("-$i months");
+        $time = mktime(0, 0, 0, $current_month - $i, 1, $current_year);
         $ym = date('Y-m', $time);
         $label = date('M Y', $time);
         $trend[$ym] = ['label' => $label, 'total' => 0];
     }
     $query = "SELECT DATE_FORMAT(created_at,'%Y-%m') AS ym, COUNT(*) AS total
               FROM reactions
-              WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-              GROUP BY ym";
+              WHERE created_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 5 MONTH), '%Y-%m-01')
+              GROUP BY ym
+              ORDER BY ym ASC";
     $res = mysqli_query($conn, $query);
     if ($res) {
         while ($r = mysqli_fetch_assoc($res)) {
@@ -236,6 +240,7 @@ if ($range === '24h') {
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Reaction Management — Blog Fusion Admin</title>
@@ -261,7 +266,7 @@ if ($range === '24h') {
             }
         }
     </script>
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
     <style>
         .emoji-bar { transition: width 0.6s cubic-bezier(.4,0,.2,1); }
     </style>
@@ -457,7 +462,7 @@ if ($range === '24h') {
                                     <td class="px-3 py-3">
                                         <div class="flex items-center gap-2 min-w-0">
                                             <?php if ($post['image']): ?>
-                                                <img src="../<?= htmlspecialchars($post['image']) ?>" class="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
+                                                <img src="<?= BASE_URL ?><?= htmlspecialchars($post['image']) ?>" class="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
                                             <?php endif; ?>
                                             <div class="min-w-0">
                                                 <p class="font-semibold text-sm line-clamp-1"><?= htmlspecialchars($post['title']) ?></p>
@@ -496,7 +501,7 @@ if ($range === '24h') {
                             <?php foreach ($author_stats as $i => $au): ?>
                             <div class="flex items-center gap-3 px-5 py-4">
                                 <span class="text-sm font-bold text-slate-400 w-5"><?= $i + 1 ?></span>
-                                <img src="../<?= htmlspecialchars($au['profile_image'] ?? 'upload/profile-images/default.png') ?>"
+                                <img src="<?= BASE_URL ?><?= htmlspecialchars($au['profile_image'] ?? 'upload/profile-images/default.png') ?>"
                                      class="w-9 h-9 rounded-xl object-cover flex-shrink-0" />
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-bold truncate"><?= htmlspecialchars($au['name']) ?></p>
@@ -528,7 +533,7 @@ if ($range === '24h') {
                                 $icon = $emap[$emoji_key] ?? $rx['emoji'];
                             ?>
                             <div class="flex items-center gap-3 px-5 py-3">
-                                <img src="../<?= htmlspecialchars($rx['user_img'] ?? 'upload/profile-images/default.png') ?>"
+                                <img src="<?= BASE_URL ?><?= htmlspecialchars($rx['user_img'] ?? 'upload/profile-images/default.png') ?>"
                                      class="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
                                 <div class="flex-1 min-w-0">
                                     <p class="text-xs font-bold truncate"><?= htmlspecialchars($rx['user_name']) ?></p>
@@ -550,7 +555,7 @@ if ($range === '24h') {
     </main>
 </div>
 
-<script src="../assets/js/admin.js"></script>
+<script src="<?= BASE_URL ?>assets/js/admin.js"></script>
 <script>
     Chart.defaults.font.family = "'Public Sans', sans-serif";
     Chart.defaults.color = '#64748b';

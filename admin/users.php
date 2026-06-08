@@ -1,8 +1,10 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAdmin();
-include "../include/db.php";
-include "../include/pagination.php";
-include "../include/admin_nav_sidebar.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/pagination.php';
+include BASE_PATH . 'include/admin_nav_sidebar.php';
 
 // logic data
 $table = 'users';
@@ -55,6 +57,7 @@ foreach (['all'=>'','active'=>'WHERE is_active=1','inactive'=>'WHERE is_active=0
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Users Management - Blog Fusion</title>
@@ -91,7 +94,7 @@ foreach (['all'=>'','active'=>'WHERE is_active=1','inactive'=>'WHERE is_active=0
             },
         }
     </script>
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css">
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
@@ -161,7 +164,7 @@ foreach (['all'=>'','active'=>'WHERE is_active=1','inactive'=>'WHERE is_active=0
                                             <div class="flex items-center gap-3">
 
                                                 <div class="size-10 rounded-full bg-primary/10 bg-cover bg-center border border-primary/20"
-                                                    style="background-image: url('../<?php echo $row['profile_image']; ?>')">
+                                                    style="background-image: url('<?= BASE_URL ?><?php echo $row['profile_image']; ?>')">
                                                 </div>
 
                                                 <div>
@@ -263,7 +266,7 @@ foreach (['all'=>'','active'=>'WHERE is_active=1','inactive'=>'WHERE is_active=0
             </div>
             <!-- Modal Body -->
             <form class="p-6 space-y-5" enctype="multipart/form-data"
-                action="../actions/admin.php?page=<?php echo $_GET['page'] ?? $page; ?>" method="POST">
+                action="<?= BASE_URL ?>actions/admin.php?page=<?php echo $_GET['page'] ?? $page; ?>" method="POST">
                 <input type="hidden" id="user-id" name="user_id" value="">
                 <!-- User Name -->
                 <div>
@@ -360,7 +363,7 @@ foreach (['all'=>'','active'=>'WHERE is_active=1','inactive'=>'WHERE is_active=0
         </div>
 
     </div>
-    <script src="../assets/js/admin.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/admin.js"></script>
     <script>
         let data = false;
         function toggleModal(modalId, show) {
@@ -401,7 +404,7 @@ foreach (['all'=>'','active'=>'WHERE is_active=1','inactive'=>'WHERE is_active=0
             edit_email.value = row.email;
             edit_role.value = row.role;
             id.value = row.id;
-            image_preview.src = '../' + image;
+            image_preview.src = '<?= BASE_URL ?>' + image;
             document.getElementById('old-image').value = image;
             placeholder.classList.add('hidden');
             previewContainer.classList.remove('hidden');
@@ -412,7 +415,7 @@ foreach (['all'=>'','active'=>'WHERE is_active=1','inactive'=>'WHERE is_active=0
 
         function delete_user(id) {
             if (!confirm('Are you sure to delete this User?')) return;
-            window.location.href = "../actions/admin.php?id=" + id + "&btn=user";
+            window.location.href = "<?= BASE_URL ?>actions/admin.php?id=" + id + "&btn=user";
         };
 
         /* ── Active / Inactive Toggle ────────────────────────── */
@@ -427,7 +430,7 @@ foreach (['all'=>'','active'=>'WHERE is_active=1','inactive'=>'WHERE is_active=0
             fd.append('status',  newStatus);
 
             try {
-                const res  = await fetch('../actions/admin_toggle_user.php', { method: 'POST', body: fd });
+                const res  = await fetch('<?= BASE_URL ?>actions/admin_toggle_user.php', { method: 'POST', body: fd });
                 const json = await res.json();
                 if (json.success) {
                     btn.dataset.active = newStatus;

@@ -1,8 +1,8 @@
 <?php
 session_start();
-include "../include/db.php";
-include "../config.php";
-include_once "../include/functions.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/db.php';
+include_once BASE_PATH . 'include/functions.php';
 
 $slug    = isset($_GET['slug']) ? mysqli_real_escape_string($conn, $_GET['slug']) : '';
 $user_id = $_SESSION['user_id'] ?? null;
@@ -428,6 +428,7 @@ function timeAgo($datetime) {
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title><?= htmlspecialchars($post['title']) ?> — Blog Fusion</title>

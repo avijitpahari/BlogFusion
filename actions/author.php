@@ -1,10 +1,11 @@
 <?php
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../pages/login.php");
+    header("Location: " . BASE_URL . "pages/login.php");
     exit;
 }
-include "../include/db.php";
+include BASE_PATH . 'include/db.php';
 global $conn;
 
 // =========  user/author profile update via home.php  ==========
@@ -16,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     // Check if email already taken
     $email_check = mysqli_query($conn, "SELECT id FROM users WHERE email = '$email' AND id != $user_id LIMIT 1");
     if ($email_check && mysqli_num_rows($email_check) > 0) {
-        header("Location: ../pages/home.php?msg=email");
+        header("Location: " . BASE_URL . "pages/home.php?msg=email");
         exit();
     }
     
@@ -48,19 +49,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $run = mysqli_query($conn, $sql);
     if ($run) {
         if ($upload_ok) {
-            move_uploaded_file($file['tmp_name'], '../' . $path);
-            if ($current_profile_image && $current_profile_image !== 'upload/profile-images/default.png' && file_exists('../' . $current_profile_image)) {
-                @unlink('../' . $current_profile_image);
+            move_uploaded_file($file['tmp_name'], BASE_PATH . $path);
+            if ($current_profile_image && $current_profile_image !== 'upload/profile-images/default.png' && file_exists(BASE_PATH . $current_profile_image)) {
+                @unlink(BASE_PATH . $current_profile_image);
             }
         }
         $_SESSION['name'] = $name;
         if (isset($_SESSION['user_name'])) {
             $_SESSION['user_name'] = $name;
         }
-        header("Location: ../pages/home.php?msg=profile_updated");
+        header("Location: " . BASE_URL . "pages/home.php?msg=profile_updated");
         exit();
     } else {
-        header("Location: ../pages/home.php?msg=update_fail");
+        header("Location: " . BASE_URL . "pages/home.php?msg=update_fail");
         exit();
     }
     exit;
@@ -73,7 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['profile_update'])) {
     $session_user_id = (int)$_SESSION['user_id'];
     $user_id = (int)$_POST['id'];
     if ($user_id !== $session_user_id) {
-        header("Location: ../author/profile.php?msg=unauthorized");
+        header("Location: " . BASE_URL . "author/profile.php?msg=unauthorized");
         exit();
     }
     
@@ -107,19 +108,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['profile_update'])) {
     $run = mysqli_query($conn, $sql);
     if ($run) {
         if ($upload_ok) {
-            move_uploaded_file($file['tmp_name'], '../' . $path);
-            if ($current_profile_image && $current_profile_image !== 'upload/profile-images/default.png' && file_exists('../' . $current_profile_image)) {
-                @unlink('../' . $current_profile_image);
+            move_uploaded_file($file['tmp_name'], BASE_PATH . $path);
+            if ($current_profile_image && $current_profile_image !== 'upload/profile-images/default.png' && file_exists(BASE_PATH . $current_profile_image)) {
+                @unlink(BASE_PATH . $current_profile_image);
             }
         }
         $_SESSION['name'] = $name;
         if (isset($_SESSION['user_name'])) {
             $_SESSION['user_name'] = $name;
         }
-        header("Location: ../author/profile.php?msg=profile_updated");
+        header("Location: " . BASE_URL . "author/profile.php?msg=profile_updated");
         exit();
     } else {
-        header("Location: ../author/profile.php?msg=update_fail");
+        header("Location: " . BASE_URL . "author/profile.php?msg=update_fail");
         exit();
     }
 }

@@ -1,8 +1,8 @@
 <?php
 // actions/upload_image.php
 
-include "../config.php";
-include "../include/session.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor(); // protect the endpoint
 
 header('Content-Type: application/json');
@@ -20,7 +20,7 @@ if (empty($_FILES['file'])) {
 }
 
 $file = $_FILES['file'];
-$uploadDir = '../upload/post-images/';   // adjust path as needed
+$uploadDir = BASE_PATH . 'upload/post-images/';   // adjust path as needed
 
 // Create folder if it doesn't exist
 if (!is_dir($uploadDir)) {

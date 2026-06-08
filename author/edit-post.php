@@ -1,8 +1,9 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
-include "../include/author_nav_sidebar.php";
-include "../config.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/author_nav_sidebar.php';
 
 $is_edit = false;
 $post_data = [];
@@ -34,6 +35,7 @@ $cat_result = mysqli_query($conn, $cat_query);
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title><?= $is_edit ? 'Edit Post' : 'Add New Post' ?> | Blog Fusion</title>
@@ -101,7 +103,7 @@ $cat_result = mysqli_query($conn, $cat_query);
             border-radius: 10px;
         }
     </style>
-    <script src="../vendor/tinymce/tinymce.min.js"></script>
+    <script src="<?= BASE_URL ?>vendor/tinymce/tinymce.min.js"></script>
 </head>
 
 <body class="bg-surface text-on-surface">
@@ -117,7 +119,7 @@ $cat_result = mysqli_query($conn, $cat_query);
         
         <!-- Canvas Content Area — mt-16 clears fixed 64px navbar -->
         <main class="mt-16 p-4 sm:p-6 md:p-8 bg-surface">
-            <form action="<?= $is_edit ? '../actions/author_post_update.php' : '../actions/author_post.php' ?>" method="POST" enctype="multipart/form-data">
+            <form action="<?= $is_edit ? BASE_URL . 'actions/author_post_update.php' : BASE_URL . 'actions/author_post.php' ?>" method="POST" enctype="multipart/form-data">
                 <?php if ($is_edit): ?>
                     <input type="hidden" name="id" value="<?= $post_data['id'] ?>" />
                     <input type="hidden" name="old_image" value="<?= htmlspecialchars($post_data['image'] ?? '') ?>" />
@@ -329,7 +331,7 @@ $cat_result = mysqli_query($conn, $cat_query);
             automatic_upload: true,
 
             // ✅ Tell TinyMCE to POST images to this handler
-            images_upload_url: '../actions/upload_image.php',
+            images_upload_url: '<?= BASE_URL ?>actions/upload_image.php',
 
             // ✅ Optional: set base path so relative URLs resolve correctly
             images_upload_base_path: '',
@@ -585,7 +587,7 @@ $cat_result = mysqli_query($conn, $cat_query);
         // ── Pre-fill existing image when editing a post ──────────
         <?php if ($is_edit && !empty($post_data['image'])): ?>
         (function () {
-            const existingImg = '../<?= htmlspecialchars($post_data['image']) ?>';
+            const existingImg = '<?= BASE_URL ?><?= htmlspecialchars($post_data['image']) ?>';
             seoPreviewImage.src = existingImg;
             seoPlaceholder.classList.add('hidden');
             seoPreviewWrapper.classList.remove('hidden');

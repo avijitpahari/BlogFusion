@@ -1,7 +1,9 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
-include "../include/author_nav_sidebar.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/author_nav_sidebar.php';
 $id = $_SESSION['user_id'];
 
 /* ── Stats ───────────────────────────────────────────────────── */
@@ -123,6 +125,7 @@ function time_ago(string $datetime): string
 <html lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Luminous | Author Dashboard</title>
@@ -301,7 +304,7 @@ function time_ago(string $datetime): string
                     $f_cat = htmlspecialchars($featured['category_name'] ?? 'Uncategorized');
                     $f_title = htmlspecialchars($featured['title']);
                     $f_desc = htmlspecialchars($featured['description'] ?? strip_tags(substr($featured['content'], 0, 160)));
-                    $f_img = '../' . $featured['image'];
+                    $f_img = BASE_URL . $featured['image'];
                     $f_ago = 'Published ' . time_ago($featured['created_at']);
                     $f_views = number_format($featured['views']);
                     $f_comments = number_format($featured['comment_count']);
@@ -366,7 +369,7 @@ function time_ago(string $datetime): string
                             $p_cat = htmlspecialchars($p['category_name'] ?? 'Uncategorized');
                             $p_ttl = htmlspecialchars($p['title']);
                             $p_dsc = htmlspecialchars($p['description'] ?? strip_tags(substr($p['content'], 0, 100)));
-                            $p_img = '../' . $p['image'];
+                            $p_img = BASE_URL . $p['image'];
                             $p_ago = time_ago($p['created_at']);
                             /* Alternate category badge colours */
                             $badge_colors = [
@@ -473,7 +476,7 @@ function time_ago(string $datetime): string
                             $ago = time_ago($act['created_at']);
                             $post_title = htmlspecialchars($act['post_title']);
                             $actor_name = htmlspecialchars($actor['name']);
-                            $actor_img = '../' . $actor['profile_image'];
+                            $actor_img = BASE_URL . $actor['profile_image'];
                             $comment_id = $act['activity_id'];
                             ?>
 

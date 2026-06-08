@@ -1,15 +1,16 @@
 <?php
 // actions/author_post_delete.php
 // GET: delete a post owned by the logged-in author
-include '../include/session.php';
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include '../include/db.php';
+include BASE_PATH . 'include/db.php';
 
 $post_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $user_id = $_SESSION['user_id'];
 
 if (!$post_id) {
-    header('Location: ../author/my-post.php?msg=invalid');
+    header('Location: ' . BASE_URL . 'author/my-post.php?msg=invalid');
     exit;
 }
 
@@ -18,7 +19,7 @@ $check = mysqli_query($conn,
     "SELECT id, image FROM posts WHERE id = '$post_id' AND author_id = '$user_id' LIMIT 1"
 );
 if (!$check || mysqli_num_rows($check) === 0) {
-    header('Location: ../author/my-post.php?msg=not_found');
+    header('Location: ' . BASE_URL . 'author/my-post.php?msg=not_found');
     exit;
 }
 
@@ -35,8 +36,8 @@ mysqli_query($conn, "DELETE FROM comments WHERE post_id = '$post_id'");
 $success = mysqli_query($conn, "DELETE FROM posts WHERE id = '$post_id' AND author_id = '$user_id'");
 if ($success) {
     // Optionally remove blog image
-    if (!empty($post['image']) && file_exists('../' . $post['image'])) {
-        @unlink('../' . $post['image']);
+    if (!empty($post['image']) && file_exists(BASE_PATH . $post['image'])) {
+        @unlink(BASE_PATH . $post['image']);
     }
 }
 
@@ -51,8 +52,8 @@ if (isset($_GET['ajax'])) {
 }
 
 if ($success) {
-    header('Location: ../author/my-post.php?msg=deleted');
+    header('Location: ' . BASE_URL . 'author/my-post.php?msg=deleted');
 } else {
-    header('Location: ../author/my-post.php?msg=delete_failed');
+    header('Location: ' . BASE_URL . 'author/my-post.php?msg=delete_failed');
 }
 exit;

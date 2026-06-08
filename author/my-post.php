@@ -1,10 +1,12 @@
-<?php include "../include/session.php";
+<?php
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/session.php';
 requireAuthor();
-include "../include/db.php";
-include "../include/functions.php";
-include "../include/author_nav_sidebar.php";
-include "../include/pagination.php";
-//include "../include/data_fetch.php";
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/functions.php';
+include BASE_PATH . 'include/author_nav_sidebar.php';
+include BASE_PATH . 'include/pagination.php';
+//include BASE_PATH . 'include/data_fetch.php';
 
 $table = 'posts';
 $limit = 6;
@@ -129,7 +131,7 @@ if (isset($_GET['ajax'])) {
                             <td class="px-4 sm:px-6 py-4">
                                 <div class="flex items-start gap-3">
                                     <?php if ($row['image']): ?>
-                                        <img class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover shadow-sm shrink-0 bg-surface-container" src="../<?= htmlspecialchars($row['image']) ?>" onerror="this.src='https://placehold.co/48x48/e8dfee/630ed4?text=P'" alt="post" />
+                                        <img class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover shadow-sm shrink-0 bg-surface-container" src="<?= BASE_URL . htmlspecialchars($row['image']) ?>" onerror="this.src='https://placehold.co/48x48/e8dfee/630ed4?text=P'" alt="post" />
                                     <?php else: ?>
                                         <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                                             <span class="material-symbols-outlined text-primary text-xl">article</span>
@@ -162,7 +164,7 @@ if (isset($_GET['ajax'])) {
                                 <div class="flex items-center justify-end gap-1">
                                     <a href="edit-post.php?id=<?= $row['id'] ?>" title="Edit post" class="p-1.5 md:p-2 rounded-lg text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-all"><span class="material-symbols-outlined text-xl">edit</span></a>
                                     <button onclick="openDeleteModal(<?= $row['id'] ?>, '<?= addslashes(htmlspecialchars($row['title'])) ?>')" title="Delete post" class="p-1.5 md:p-2 rounded-lg text-on-surface-variant hover:bg-error-container hover:text-error transition-all"><span class="material-symbols-outlined text-xl">delete</span></button>
-                                    <a href="../redirect-post.php?id=<?= $row['id'] ?>" target="_blank" title="View post" class="p-1.5 md:p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all"><span class="material-symbols-outlined text-xl">visibility</span></a>
+                                    <a href="<?= BASE_URL ?>redirect-post.php?id=<?= $row['id'] ?>" target="_blank" title="View post" class="p-1.5 md:p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all"><span class="material-symbols-outlined text-xl">visibility</span></a>
                                 </div>
                             </td>
                         </tr>
@@ -186,6 +188,7 @@ $msg = $_GET['msg'] ?? '';
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>My Posts - Luminous Editor</title>
@@ -505,7 +508,7 @@ $msg = $_GET['msg'] ?? '';
                                             <div class="flex items-start gap-3">
                                                 <?php if ($row['image']): ?>
                                                     <img class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover shadow-sm shrink-0 bg-surface-container"
-                                                        src="../<?= htmlspecialchars($row['image']) ?>"
+                                                        src="<?= BASE_URL . htmlspecialchars($row['image']) ?>"
                                                         onerror="this.src='https://placehold.co/48x48/e8dfee/630ed4?text=P'"
                                                         alt="post" />
                                                 <?php else: ?>
@@ -567,7 +570,7 @@ $msg = $_GET['msg'] ?? '';
                                                     <span class="material-symbols-outlined text-xl">delete</span>
                                                 </button>
                                                 <!-- View -->
-                                                <a href="../redirect-post.php?id=<?= $row['id'] ?>" target="_blank" title="View post" class="p-1.5 md:p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all"><span class="material-symbols-outlined text-xl">visibility</span></a>
+                                                <a href="<?= BASE_URL ?>redirect-post.php?id=<?= $row['id'] ?>" target="_blank" title="View post" class="p-1.5 md:p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all"><span class="material-symbols-outlined text-xl">visibility</span></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -625,7 +628,7 @@ $msg = $_GET['msg'] ?? '';
             const id = pendingDeleteId;
             closeDeleteModal();
 
-            fetch(`../actions/author_post_delete.php?id=${id}&_token=<?= $_SESSION['user_id'] ?>&ajax=1`)
+            fetch(`<?= BASE_URL ?>actions/author_post_delete.php?id=${id}&_token=<?= $_SESSION['user_id'] ?>&ajax=1`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
@@ -672,7 +675,7 @@ $msg = $_GET['msg'] ?? '';
             selectEl.disabled = true;
             selectEl.style.opacity = '0.5';
 
-            fetch('../actions/toggle_post_status.php', {
+            fetch('<?= BASE_URL ?>actions/toggle_post_status.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'id=' + postId + '&status=' + newStatus

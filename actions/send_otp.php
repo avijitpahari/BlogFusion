@@ -1,7 +1,8 @@
 <?php
+require_once dirname(__DIR__) . '/config.php';
 session_start();
-include "../include/db.php";
-include "../include/send_mail.php";
+include BASE_PATH . "include/db.php";
+include BASE_PATH . "include/send_mail.php";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');

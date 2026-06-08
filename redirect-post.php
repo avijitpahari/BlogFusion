@@ -1,7 +1,7 @@
 <?php
-
-include "include/db.php";
-include "include/functions.php";
+require_once __DIR__ . '/config.php';
+include BASE_PATH . 'include/db.php';
+include_once BASE_PATH . 'include/functions.php';
 $year = date("Y");
 $month = date("m");
 $id = (int)$_GET['id'];

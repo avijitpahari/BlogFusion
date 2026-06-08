@@ -1,5 +1,5 @@
 <?php
-include "data_fetch.php";
+include_once __DIR__ . '/data_fetch.php';
 $data_fetch = data_featch($conn, $_SESSION['user_id']);
 $data1 = $data_fetch['data'];
 
@@ -28,7 +28,7 @@ function author_slidebar($active)
         id="main-sidebar">
         <div class="mb-10 px-4 flex justify-between items-center">
             <h1 class="text-2xl font-black tracking-tight text-[#7C3AED] d-flex">
-                <img src="../upload/site_image/logo1.png" alt="Luminous">
+                <img src="<?= BASE_URL ?>upload/site_image/logo1.png" alt="Luminous">
             </h1>
             <button
                 class="md:hidden w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors"
@@ -85,7 +85,7 @@ function author_slidebar($active)
         </nav>
         <div class="mt-auto border-t border-outline-variant/20 pt-6">
             <a class="flex items-center gap-3 px-4 py-3 dark:text-[#e8dfee] hover:bg-[#f3ebfa] dark:hover:bg-[#4a4455] transition-colors rounded-full text-error"
-                href="../actions/logout.php">
+                href="<?= BASE_URL ?>actions/logout.php">
                 <span class="material-symbols-outlined">logout</span>
                 <span class="font-medium">Logout</span>
             </a>
@@ -136,7 +136,7 @@ function author_navbar()
             <div class="h-10 w-10 rounded-full bg-primary-container overflow-hidden cursor-pointer"
                 onclick="window.location.href='profile.php'">
                 <img class="h-full w-full object-cover"
-                    src="../<?= $data1['profile_image'] ?>"
+                    src="<?= BASE_URL . $data1['profile_image'] ?>"
                     alt="Profile" />
             </div>
         </div>

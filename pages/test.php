@@ -1,8 +1,7 @@
 <?php
-
-include "../include/db.php";
-include "../include/data_fetch.php";
-include "../config.php";
+require_once dirname(__DIR__) . '/config.php';
+include BASE_PATH . 'include/db.php';
+include BASE_PATH . 'include/data_fetch.php';
 
 $slug = $_GET['slug'] ?? '';
 
@@ -17,6 +16,7 @@ if (!$post) {
 <html class="light" lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo2.png" />
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>Blog Fusion - The Future of Creative Development</title>
@@ -663,7 +663,7 @@ if (!$post) {
       <div data-reveal="fade-up" style="transition-delay:0.22s" class="flex items-center gap-4 pt-4">
         <div
           class="w-12 h-12 rounded-full bg-surface-container-highest overflow-hidden ring-4 ring-surface-container-low">
-          <img alt="Julian Vance" class="w-full h-full object-cover" src="../<?= $post['image'] ?>" />
+          <img alt="Julian Vance" class="w-full h-full object-cover" src="<?= BASE_URL . $post['image'] ?>" />
         </div>
         <div class="text-left">
           <div class="font-bold text-on-surface">Julian Vance</div>
