@@ -1,0 +1,1139 @@
+[
+  {
+    "id": "TC001",
+    "title": "Register a new account and reach the correct landing page",
+    "description": "This verifies that a new visitor can create an account successfully and proceed to the appropriate signed-in landing page for their role.",
+    "category": "Authentication & Security",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /register"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the name field with a new user name"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with a unique email address"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with a valid password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an account created confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user reaches the appropriate landing page for the account role"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Sign in and reach the role-based landing page",
+    "description": "This verifies that a registered user can log in with valid credentials and is routed to the correct page for their role.",
+    "category": "Authentication & Security",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the appropriate signed-in landing page is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Reset a password with a valid OTP",
+    "description": "This verifies that a user can complete the password recovery flow with a valid one-time code and set a new password successfully.",
+    "category": "Authentication & Security",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Open the password reset flow"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Request a reset code"
+      },
+      {
+        "type": "action",
+        "description": "Enter the OTP when prompted"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the new password field with a valid new password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the password reset form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a password reset success confirmation is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Block access to author tools for a non-author",
+    "description": "This verifies that a signed-in user without author privileges is denied access to protected author pages and is returned to the login screen.",
+    "category": "Authentication & Security",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open a protected author page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access denied behavior is shown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user is returned to the login screen"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Add a new blog post",
+    "description": "This verifies an author or admin can create a post and see it appear in the management list.",
+    "category": "Post Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the post editor page"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the post title field with a unique post title"
+      },
+      {
+        "type": "action",
+        "description": "Select a category for the post"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the rich text editor with post content"
+      },
+      {
+        "type": "action",
+        "description": "Save the post"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new post appears in the management list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Browse published posts and open an article from pagination",
+    "description": "This verifies that a visitor can browse the home feed, move through paginated published posts, and open an article to read it.",
+    "category": "Reader Platform",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /home"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the post list"
+      },
+      {
+        "type": "action",
+        "description": "Move to the next page of posts"
+      },
+      {
+        "type": "action",
+        "description": "Open a published post from the feed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the full article page is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the article content is visible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "View admin overview metrics",
+    "description": "This verifies that an administrator can open the dashboard and see the key site summary metrics needed to assess overall platform health.",
+    "category": "Admin Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /admin/dashboard.php"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard summary metrics are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify recent activity entries are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC008",
+    "title": "Edit an existing blog post",
+    "description": "This verifies an author or admin can update a post and see the revised version listed afterward.",
+    "category": "Post Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the post management page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new post with a unique title if no editable post is available"
+      },
+      {
+        "type": "action",
+        "description": "Open the post for editing"
+      },
+      {
+        "type": "action",
+        "description": "Update the post content"
+      },
+      {
+        "type": "action",
+        "description": "Save the post changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated post appears in the management list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC009",
+    "title": "Filter the home feed by category and open a matching post",
+    "description": "This verifies that category filtering updates the published feed and still allows a visitor to open a relevant article.",
+    "category": "Reader Platform",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /home"
+      },
+      {
+        "type": "action",
+        "description": "Select a category filter"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the feed updates to matching published posts"
+      },
+      {
+        "type": "action",
+        "description": "Open a post from the filtered results"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the selected article page is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC010",
+    "title": "Add a new category",
+    "description": "This verifies an admin can create a category and see it listed afterward.",
+    "category": "Category Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the category management page"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the category name field with a unique category name"
+      },
+      {
+        "type": "action",
+        "description": "Save the category"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new category appears in the category list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC011",
+    "title": "Publish or unpublish a post",
+    "description": "This verifies an author or admin can change a post status and see the updated status in the list.",
+    "category": "Post Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the post management page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new post if needed to ensure a controllable status"
+      },
+      {
+        "type": "action",
+        "description": "Change the post status"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the post status is updated in the list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC012",
+    "title": "Read a post after view tracking is applied",
+    "description": "This verifies that opening a published article loads the full content after view tracking is processed.",
+    "category": "Reader Platform",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /single-post.php"
+      },
+      {
+        "type": "action",
+        "description": "Open a published article"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the article content is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the page shows the article after view tracking is applied"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC013",
+    "title": "Edit an existing category",
+    "description": "This verifies an admin can update a category and see the updated value in the list.",
+    "category": "Category Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the category management page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new category with a unique name if no editable category is available"
+      },
+      {
+        "type": "action",
+        "description": "Open the category for editing"
+      },
+      {
+        "type": "action",
+        "description": "Update the category name"
+      },
+      {
+        "type": "action",
+        "description": "Save the category changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated category appears in the category list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC014",
+    "title": "Review author performance rankings",
+    "description": "This verifies that an administrator can view author ranking information to compare contributor performance on the dashboard.",
+    "category": "Admin Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /admin/dashboard.php"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify author performance rankings are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the most engaged contributors are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC015",
+    "title": "Delete a blog post",
+    "description": "This verifies an author or admin can delete a post and no longer see it in the management list.",
+    "category": "Post Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the post management page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new post if needed to ensure a safe delete target"
+      },
+      {
+        "type": "action",
+        "description": "Delete the post"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the post is removed from the management list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC016",
+    "title": "Add a comment to a post while signed in",
+    "description": "This verifies that a signed-in reader can submit a comment and see it appear in the discussion on the article page.",
+    "category": "Reader Platform",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open a published post"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the comment field with a new comment"
+      },
+      {
+        "type": "action",
+        "description": "Submit the comment"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new comment appears in the discussion"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC017",
+    "title": "Delete a category",
+    "description": "This verifies an admin can remove a category and no longer see it in the list.",
+    "category": "Category Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the category management page"
+      },
+      {
+        "type": "action",
+        "description": "Create a new category with a unique name if no safe category is available"
+      },
+      {
+        "type": "action",
+        "description": "Delete the category"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the category is removed from the category list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC018",
+    "title": "Inspect site traffic trends",
+    "description": "This verifies that an administrator can review the dashboard traffic trend information to understand site activity over time.",
+    "category": "Admin Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /admin/dashboard.php"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a site traffic trend chart is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify traffic trend data is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC019",
+    "title": "React to a post while signed in",
+    "description": "This verifies that a signed-in reader can choose an emoji reaction and see the reaction register on the article.",
+    "category": "Reader Platform",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open a published post"
+      },
+      {
+        "type": "action",
+        "description": "Choose an emoji reaction"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the reaction is registered on the article"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC020",
+    "title": "Change a user's role",
+    "description": "This verifies an admin can update a user's role and see the new role in the user list.",
+    "category": "User Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the user management page"
+      },
+      {
+        "type": "action",
+        "description": "Change a user's role"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user's role is updated in the list"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC021",
+    "title": "Compare top authors by views",
+    "description": "This verifies that an administrator can inspect author view rankings on the dashboard to identify which contributors generate the most readership.",
+    "category": "Admin Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /admin/dashboard.php"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify top author view rankings are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify author view counts are displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC022",
+    "title": "Toggle a user's active state",
+    "description": "This verifies an admin can disable or enable a user and see the status change in the user list.",
+    "category": "User Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the user management page"
+      },
+      {
+        "type": "action",
+        "description": "Toggle a user's active state"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user's status is updated in the list"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC023",
+    "title": "Review recent activity on the dashboard",
+    "description": "This verifies that an administrator can use the dashboard activity feed to monitor recent platform events.",
+    "category": "Admin Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /admin/dashboard.php"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify recent activity entries are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify activity details are displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC024",
+    "title": "Review and act on an author category request",
+    "description": "This verifies an admin can review an author request and see its status updated after taking action.",
+    "category": "Category Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the category management page"
+      },
+      {
+        "type": "action",
+        "description": "Open an author category request"
+      },
+      {
+        "type": "action",
+        "description": "Take action on the request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the request status is updated"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC025",
+    "title": "View author analytics and recent feedback",
+    "description": "This verifies that an author can open analytics and review performance metrics and recent feedback activity.",
+    "category": "Author Workspace",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the author analytics page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify author performance data is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify recent feedback activity is visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC026",
+    "title": "Inspect leadership rankings for engaged contributors",
+    "description": "This verifies that an administrator can identify the most engaged authors from the dashboard leadership view.",
+    "category": "Admin Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /admin/dashboard.php"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify leadership rankings are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify engaged contributors are displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC027",
+    "title": "Submit a new category request and see it in history",
+    "description": "This verifies that an author can request a new category with justification and later see the request listed in history.",
+    "category": "Author Workspace",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the category request page"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the category name field with a new category name"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the justification field with a request reason"
+      },
+      {
+        "type": "action",
+        "description": "Submit the category request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the request appears in the history section"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC028",
+    "title": "View dashboard on a smaller result set",
+    "description": "This verifies that the administrator dashboard still presents usable summary information when only limited activity or metric data is available.",
+    "category": "Admin Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /admin/dashboard.php"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard summary metrics are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the dashboard remains usable with limited data"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC029",
+    "title": "Manage author notifications by marking one read and deleting one",
+    "description": "This verifies that an author can review notifications, mark one as read, and remove one from the list.",
+    "category": "Author Workspace",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Open the notifications page"
+      },
+      {
+        "type": "action",
+        "description": "Mark a notification as read"
+      },
+      {
+        "type": "action",
+        "description": "Remove a notification from the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the notification list reflects the read and deleted states"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC030",
+    "title": "View the admin user list",
+    "description": "This verifies an admin can open user management and review the list of users and roles.",
+    "category": "User Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the user management page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user list is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC031",
+    "title": "View the category list",
+    "description": "This verifies an admin can open category management and see the current categories list.",
+    "category": "Category Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the category management page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the category list is displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC032",
+    "title": "View the author dashboard",
+    "description": "This verifies an author can open the dashboard and see their overview content.",
+    "category": "Post Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the author dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the author dashboard is displayed"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC033",
+    "title": "View an empty post list state",
+    "description": "This verifies the management page shows an empty state when there are no posts to manage.",
+    "category": "Post Management",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with {{LOGIN_USER}}"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with {{LOGIN_PASSWORD}}"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the link to the post management page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an empty state is displayed for the post list"
+      }
+    ],
+    "priority": "Low"
+  }
+]

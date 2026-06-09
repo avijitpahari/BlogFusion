@@ -27,8 +27,16 @@ function author_slidebar($active)
         class="h-screen w-64 fixed left-0 top-0 bg-[#f9f1ff] dark:bg-[#1d1a24] flex flex-col py-8 px-4 z-50 transition-transform duration-300 sidebar-closed md:translate-x-0"
         id="main-sidebar">
         <div class="mb-10 px-4 flex justify-between items-center">
+            <?php
+            include_once __DIR__ . '/functions.php';
+            $siteSettings = fetch_site_settings();
+            $author_logo = $siteSettings['logo'] ?? 'upload/site_image/logo1.png';
+            if (!preg_match('/^https?:\/\//i', $author_logo)) {
+                $author_logo = BASE_URL . $author_logo;
+            }
+            ?>
             <h1 class="text-2xl font-black tracking-tight text-[#7C3AED] d-flex">
-                <img src="<?= BASE_URL ?>upload/site_image/logo1.png" alt="Luminous">
+                <img src="<?= $author_logo ?>" alt="Logo" class="h-16 w-auto max-w-full object-contain">
             </h1>
             <button
                 class="md:hidden w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors"

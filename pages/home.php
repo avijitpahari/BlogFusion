@@ -540,9 +540,16 @@ if ($notif_res) {
         <aside id="sidebar" class="w-64 bg-surface-container-low shrink-0 fixed top-0 left-0 h-screen flex flex-col z-40 transition-transform duration-300 -translate-x-full lg:translate-x-0">
             <div class="px-6 py-5 border-b border-outline-variant/20">
                 <div class="flex items-center gap-2">
-                    <img src="<?php echo defined('BASE_URL') ? BASE_URL : '/BlogFusion/'; ?>upload/site_image/logo1.png" alt="BlogFusion" class="h-8 object-contain" />
+                    <?php
+                    $homeSettings = fetch_site_settings();
+                    $home_logo = $homeSettings['logo'] ?? 'upload/site_image/logo1.png';
+                    if (!preg_match('/^https?:\/\//i', $home_logo)) {
+                        $home_logo = (defined('BASE_URL') ? BASE_URL : '/BlogFusion/') . $home_logo;
+                    }
+                    ?>
+                    <img src="<?php echo $home_logo; ?>" alt="BlogFusion" class="h-16 w-auto max-w-full object-contain" />
                 </div>
-                <div class="text-[11px] text-on-surface-variant mt-1 font-medium">User Panel</div>
+                
             </div>
 
             <!-- Sidebar user badge -->

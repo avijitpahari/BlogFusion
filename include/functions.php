@@ -82,21 +82,24 @@ function fetch_latest_posts(
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function fetch_top_posts($conn,$limit=5){
+function fetch_top_posts($conn, $limit = 5) {
     $limit = (int)$limit;
 
-    $sql = "SELECT *
+    $sql = "SELECT posts.*, categories.name AS category_name, COUNT(reactions.id) AS reaction_count
             FROM posts
-            WHERE status='published'
-            ORDER BY views DESC
+            LEFT JOIN categories ON posts.category_id = categories.id
+            LEFT JOIN reactions ON posts.id = reactions.post_id
+            WHERE posts.status = 'published'
+            GROUP BY posts.id
+            ORDER BY posts.views DESC
             LIMIT $limit";
 
-    $result = mysqli_query($conn,$sql);
+    $result = mysqli_query($conn, $sql);
     if (!$result) {
         return [];
     }
 
-    return mysqli_fetch_all($result,MYSQLI_ASSOC);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
 function fetch_category_stats($conn){
@@ -151,10 +154,19 @@ function fetch_user_by_id($conn,$id){
 }
 
 function fetch_site_settings(){
-
+    global $conn;
+    $sql = "SELECT * FROM settings LIMIT 1";
+    $result = mysqli_query($conn, $sql);
+    if ($result && mysqli_num_rows($result) > 0) {
+        return mysqli_fetch_assoc($result);
+    }
     return [
-        // 'site_name' => 'Blog Fusion',
-        // 'logo' => 'assets/images/logo.png'
+        'site_name' => 'Blog Fusion',
+        'logo' => 'upload/site_image/logo2.png',
+        'description' => 'Connecting ideas and people. Blog Fusion is your go-to destination for high-quality insights on technology, design, and modern development.',
+        'contact_email' => 'hello@blogfusion.com',
+        'contact_address' => 'Innovation District, Tech City, TC 10101',
+        'contact_hours' => 'Mon-Fri, 9am-6pm IST'
     ];
 }
 
@@ -224,7 +236,7 @@ function inject_project_toast() {
                 
                 // Determine if it is actually an error/warning or success message
                 const errorCodes = ['p_not_match', 'u_not_find', 'inactive', 'exists', 'verification_failed', 'post_fail', 'unauthorized', 'update_fail', 'user_add_fail', 'delete_self_error', 'user_delete_fail', 'category_delete_fail', 'post_delete_fail', 'comment_delete_fail'];
-                const successCodes = ['registered', 'profile_updated', 'user_add', 'posted', 'login_success', 'logout', 'user_deleted', 'category_deleted', 'post_deleted', 'comment_deleted', 'reset_success'];
+                const successCodes = ['registered', 'profile_updated', 'user_add', 'posted', 'login_success', 'logout', 'user_deleted', 'category_deleted', 'post_deleted', 'comment_deleted', 'reset_success', 'settings_updated'];
                 
                 if (errorCodes.includes(msg)) {
                     type = 'error';
@@ -232,6 +244,7 @@ function inject_project_toast() {
                 
                 if (msg === 'registered') displayMsg = 'Registration successful! Please login.';
                 else if (msg === 'profile_updated') displayMsg = 'Profile updated successfully!';
+                else if (msg === 'settings_updated') displayMsg = 'Site settings updated successfully!';
                 else if (msg === 'reset_success') displayMsg = 'Password reset successfully! Please log in with your new password.';
                 else if (msg === 'login_success') displayMsg = 'Welcome back! Logged in successfully.';
                 else if (msg === 'logout') displayMsg = 'Logged out successfully.';

@@ -267,4 +267,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && $_GET['btn'] == 'comment') {
         exit();
     }
 }
+
+// =========  settings update section  ==========
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['settings-update'])) {
+    $site_name = mysqli_real_escape_string($conn, trim($_POST['site_name'] ?? ''));
+    $description = mysqli_real_escape_string($conn, trim($_POST['description'] ?? ''));
+    $contact_email = mysqli_real_escape_string($conn, trim($_POST['contact_email'] ?? ''));
+    $contact_address = mysqli_real_escape_string($conn, trim($_POST['contact_address'] ?? ''));
+    $contact_hours = mysqli_real_escape_string($conn, trim($_POST['contact_hours'] ?? ''));
+
+    // Fetch first settings row ID to update
+    $check = mysqli_query($conn, "SELECT id FROM settings LIMIT 1");
+    $settings_id = 1;
+    if ($check && mysqli_num_rows($check) > 0) {
+        $settings_id = (int)mysqli_fetch_assoc($check)['id'];
+    }
+
+    // Handle logo upload if provided
+    $logo_path = null;
+    if (isset($_FILES['logo']) && !empty($_FILES['logo']['tmp_name'])) {
+        $file = $_FILES['logo'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+        if (in_array($ext, $allowed)) {
+            $mime = mime_content_type($file['tmp_name']);
+            if (strpos($mime, 'image/') === 0 || $ext === 'svg') {
+                $filename = 'site_logo_' . uniqid() . '.' . $ext;
+                $logo_path_target = 'upload/site_image/' . $filename;
+                // Ensure target directory exists
+                if (!file_exists(BASE_PATH . 'upload/site_image')) {
+                    mkdir(BASE_PATH . 'upload/site_image', 0777, true);
+                }
+                if (move_uploaded_file($file['tmp_name'], BASE_PATH . $logo_path_target)) {
+                    $logo_path = $logo_path_target;
+                }
+            }
+        }
+    }
+
+    if ($logo_path) {
+        $sql = "UPDATE settings SET site_name='$site_name', description='$description', logo='$logo_path', contact_email='$contact_email', contact_address='$contact_address', contact_hours='$contact_hours' WHERE id=$settings_id";
+    } else {
+        $sql = "UPDATE settings SET site_name='$site_name', description='$description', contact_email='$contact_email', contact_address='$contact_address', contact_hours='$contact_hours' WHERE id=$settings_id";
+    }
+
+    $run = mysqli_query($conn, $sql);
+    if ($run) {
+        header("Location: " . BASE_URL . "admin/settings.php?msg=settings_updated");
+        exit();
+    } else {
+        header("Location: " . BASE_URL . "admin/settings.php?msg=update_fail");
+        exit();
+    }
+}
 ?>

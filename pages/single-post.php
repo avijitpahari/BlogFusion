@@ -617,7 +617,7 @@ function timeAgo($datetime) {
       <div class="space-y-5">
         <div class="flex justify-between items-center px-1">
           <h3 class="text-xs font-black tracking-widest uppercase text-on-surface-variant">Most Read Today</h3>
-          <a href="<?= site_url('pages/home.php') ?>" class="text-[11px] font-bold text-primary hover:underline">See all</a>
+          <a href="<?= site_url('pages/home.php?model=blog') ?>" class="text-[11px] font-bold text-primary hover:underline">See all</a>
         </div>
         <div class="space-y-3">
           <?php
@@ -961,7 +961,7 @@ function timeAgo($datetime) {
 <section class="max-w-7xl mx-auto px-6 py-24">
   <div class="flex justify-between items-center mb-10">
     <h3 class="text-xs font-black tracking-widest uppercase text-on-surface-variant">More from Blog Fusion</h3>
-    <a href="<?= site_url('pages/home.php') ?>" class="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+    <a href="<?= site_url('pages/home.php?model=blog') ?>" class="text-xs font-bold text-primary hover:underline flex items-center gap-1">
       View all <span class="material-symbols-outlined text-sm">arrow_forward</span>
     </a>
   </div>
@@ -996,6 +996,8 @@ function timeAgo($datetime) {
   </div>
   <?php endif; ?>
 </section>
+
+<?php include BASE_PATH . 'include/footer.php'; ?>
 
 <!-- ============================================================
      JAVASCRIPT

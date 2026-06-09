@@ -76,7 +76,15 @@ function slidebar($active)
                 <span class="material-symbols-outlined">auto_awesome</span>
             </div> -->
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-primary"><img src="<?= BASE_URL ?>upload/site_image/logo1.png" alt=""></h1>
+                <?php
+                include_once __DIR__ . '/functions.php';
+                $siteSettings = fetch_site_settings();
+                $sidebar_logo = $siteSettings['logo'] ?? 'upload/site_image/logo1.png';
+                if (!preg_match('/^https?:\/\//i', $sidebar_logo)) {
+                    $sidebar_logo = BASE_URL . $sidebar_logo;
+                }
+                ?>
+                <h1 class="text-xl font-bold tracking-tight text-primary"><img src="<?= $sidebar_logo ?>" alt="Logo" class="h-16 w-auto max-w-full object-contain"></h1>
                 <p class="text-xs text-slate-500 font-medium uppercase tracking-wider">Admin Portal</p>
             </div>
         </div>
@@ -130,6 +138,13 @@ function slidebar($active)
                 class="<?= ($active == 'analytics') ? 'flex items-center gap-3 px-4 py-3 text-primary font-semibold sidebar-active rounded-lg transition-all' : 'flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all' ?>">
                 <span class="material-symbols-outlined">analytics</span>
                 <span>Analytics</span>
+            </a>
+
+            <!-- Settings -->
+            <a href="settings.php"
+                class="<?= ($active == 'settings') ? 'flex items-center gap-3 px-4 py-3 text-primary font-semibold sidebar-active rounded-lg transition-all' : 'flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-primary rounded-lg transition-all' ?>">
+                <span class="material-symbols-outlined">settings</span>
+                <span>Settings</span>
             </a>
 
         </nav>

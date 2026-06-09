@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:80/BlogFusion/",
+  "loginUser": "test1@gmail.com",
+  "loginPassword": "1234",
+  "executionArgs": {
+    "projectName": "BlogFusion",
+    "projectPath": "c:\\xampp\\htdocs\\BlogFusion",
+    "testIds": [],
+    "additionalInstruction": "Please run test cases using the following credentials: Reader/User: email-test1@gmail.com (pwd: 1234), Author: email-test2@gmail.com (pwd: 1234), Admin: email-test3@gmail.com (pwd: 1234). Make sure you verify visual login layouts and session handling for all roles.",
+    "envs": {
+      "API_KEY": "sk-user-tLoJQGwoE-Jx7Se7E9-Kgk64GDRCqd3UsxSIPc3oOwoeZxYFKp1-v0vQVDbXGJNm3Cc8ek8QiYBFje0Xt4wWDfX3R-DsjJJ3JDH1dorPWxJrXbIuWbPMkpm-rFko7J9aR7E"
+    }
+  },
+  "proxy": "http://4792dd4a-d09c-44e5-b57e-f86edeb2a04d:5pE3dvmE599DReoBQJ6Ug4L6dcf1ZK47@tun.testsprite.com:8080"
+}
